@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>COMP2501 - Tutorial 1</title>
+<link href="template.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<p class="header">COMP 2501 - Winter 2014 Tutorial #1</p>
+<p class="header subheader">DirectX 11 Setup and Drawing a Triangle</p>
+<hr/>
+<p class="segment-header">Description:</p>
+<p>The purpose of this tutorial is to familiarize yourself with the tools used to draw geometric shapes in a DirectX 11 application in Microsoft Visual Studio 2012. We will walk through the basics and eventually  draw our first shapes.</p>
+<p>To get credit for the tutorial you must complete, or make significant progress, on the problems provided and demonstrate your results to the tutorial TA.<br />
+If you cannot complete the tutorial in the time allotted you may demonstrate the completed results to the TA during their office hours.</p>
+<p>These tutorials are based on the <a target="_blank" href="http://www.rastertek.com/tutdx11.html">Rastertek</a> set of tutorials.</p>
+<hr/>
+<p class="segment-header">Instructions:</p>
+<p class="segment-header black-bold">Overview</p>
+<p>Open <span class="glossary-term">Microsoft Visual Studio 2012</span> and open the project found in the <span class="code">tutorial1</span> folder. Run the project (hit F5), it should build and open a borderless window with a black background. You can close this window by pressing Esc.</p>
+<p><img src="images/blackscreen.png" width="800" height="601" alt="" /></p>
+<p>&nbsp;</p>
+<p>For now we will ignore most of the code in the project. The functionality we are immediately interested in is the drawing of geometry to the screen. There are many components to this, but the most important ones for now are located in <span class="glossary-term"><span class="code">modelclass.cpp</span></span>. Open that file.</p>
+<p>Examine the class. The code that describes the geometry of the shapes we want to draw to the screen is located in the <span class="code">InitializeBuffers</span> method. The purpose of this method is to configure and then create a<span class="glossary-term"> vertex buffer</span> and an <span class="glossary-term">index buffer</span><span class="black-bold">. </span>These buffers contain all of the information required to draw our shapes to the screen.</p>
+<p>&nbsp;</p>
+<p>Notice the variables we maintain. The most important ones are as follows:</p>
+<p class="code">VertexType* vertices; <span class="comment">// array to hold our shape's vertices<br />
+</span>unsigned long* indices; <span class="comment">// array to hold the indices of our shape's vertices</span><br />
+D3D11_BUFFER_DESC vertexBufferDesc, indexBufferDesc; <span class="comment">// descriptions of our buffers</span><br />
+D3D11_SUBRESOURCE_DATA vertexData, indexData; <span class="comment">// buffer data</span></p>
+<p>A detailed description of each of the variables follows:<br />
+</p>
+<ul>
+  <li><span class="code">vertices</span> - an array that holds all the vertices of the shape we want to draw to the screen. Shapes in DirectX are composed of triangles (also called polygons), which are in turn composed 3 vertices each.</li>
+  <li><span class="code">indices</span> - an array used mostly for performance reasons. Essentially, the index buffer maps out in which order we should draw the vertices defined in the vertex buffer. We can use it to specify repeat vertices, without having to add a whole duplicate vertex to our vertex buffer. More information available <a href="http://openglbook.com/the-book/chapter-3-index-buffer-objects-and-primitive-types/">here</a>. </li>
+  <li><span class="code">vertexBufferDesc</span> and <span class="code">indexBufferDesc</span> - describe how our vertex and index buffers should be read from and written to. </li>
+  <li><span class="code">vertexData</span> and <span class="code">indexData</span> -  we store our <span class="code">vertices</span> and <span class="code">indices</span> arrays in these before creating our buffers.</li>
+</ul>
+<p>&nbsp;</p>
+<p>Throughout the method we  configure these variables and, once complete, combine them together to create our buffers:<br />
+  <br />
+  <span class="code"><span class="comment">// Now create the vertex buffer.</span><br />
+result = device-&gt;CreateBuffer(&amp;vertexBufferDesc, &amp;vertexData, &amp;m_vertexBuffer);</span></p>
+<p class="code">...</p>
+<p class="code"><span class="comment">// Create the index buffer.</span><br />
+result = device-&gt;CreateBuffer(&amp;indexBufferDesc, &amp;indexData, &amp;m_indexBuffer);</p>
+<p>Note: <span class="code">result</span> is of type <span class="code">HRESULT</span>, which is simply a data type used in Windows to represent error conditions.</p>
+<p>&nbsp;</p>
+<p class="segment-header"><span class="black-bold">Problem 1)</span></p>
+<p>Continue to examine the <span class="code">InitializeBuffers</span> method. Observe that we are currently specifying a vertex to be drawn.</p>
+<p class="code"><span class="comment">// Load the vertex array with data.</span><br />
+vertices[0].position = XMFLOAT3(-1.0f, -1.0f, 0.0f);  <span class="comment">// Bottom left.</span><br />
+vertices[0].color = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);</p>
+<p>This vertex, and all future vertices in this project, are of type VertexType, defined elsewhere in <span class="glossary-term"><span class="code">modelclass.h</span></span>:</p>
+<p class="code">struct VertexType<br />
+  {<br />
+  XMFLOAT3 position;<br />
+  XMFLOAT4 color;<br />
+  };</p>
+<p>Our vertices are composed of two vectors, one 3-dimensional and one 4-dimensional, representing position and color respectively. Position is a vector composed of x, y, and z coordinates (we'll only be dealing with 2 dimensions, x and y, in this first tutorial). Color is composed of 4 values, corresponding to an RGBA (Red-Green-Blue-Alpha) value. <br />
+</p>
+<p> Using this initial vertex as an example, add two more vertices to our <span class="code">vertices</span> array to make a complete right-angle triangle. Use the same color value (red) for all vertices. Hint: you will have to change a little more than just adding the lines for the new vertices. Don't forget to update the <span class="code">indices</span> array as well!</p>
+<p>You will notice that nothing is visible on the screen until we have made a complete triangle. This is the way that we build our shapes, through triangles. </p>
+<p><span class="black-bold">Warning</span>: DirectX uses counter-clockwise <span class="glossary-term">backface culling</span>. Backface culling is a technique used for performance reasons. The principle is that since users will never see the backside of a polygon, there is no need to render it. DirectX determines which way a polygon is facing by the order in which it is drawn. If drawn counter-clockwise, you will be looking at the back of the polygon, and it will be invisible to you. Draw polygons clockwise to see their front face. For more information, see <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/bb204853(v=vs.85).aspx">here</a>.</p>
+<p><img src="images/culling.jpg" width="469" height="289" /></p>
+<p>After completing the problem, you should see a red right-angle triangle drawn on your screen.</p>
+<p><img src="images/redtriangle.png" width="799" height="598" /></p>
+<p class="segment-header"><span class="black-bold">Problem 2)</span></p>
+<p>Transform your red triangle into a red square by filling the <span class="code">vertices</span> array with the 3 vertices required to complete the square (2 of which will be duplicates). Also, add 3 more vertices to draw a red triangle just above your square, forming a kind of house. </p>
+<p>Don't forget to update the <span class="code">indices</span> array as well. Be careful of the order in which you add the vertices.</p>
+<p>After completing the problem, you should see a red square drawn on your screen, with a red triangle on top of it.</p>
+<p><img src="images/house.png" width="799" height="594" /></p>
+<p class="segment-header"><span class="black-bold">Problem 3)</span></p>
+<p>To improve performance it's always better to avoid duplicating the vertices in our shape. For this problem, draw the red square and red triangle to the screen, as before, except use only 5 vertices instead of 9, removing the duplicates. </p>
+<p>To accomplish the task of drawing the house with only 5 vertices we'll have to use our <span class="code">indices</span> array. Remember that it tells the GPU which vertices to draw, and in which order to draw them. Hint: our <span class="code">indices</span> array does not need to be the same size as our <span class="code">vertices</span> array.</p>
+<p class="segment-header"><span class="black-bold">Problem 4)</span></p>
+<p>Create a rainbow house. Change the color of each of the vertices to something different. Remember each 4-dimensional color vector represents an RGBA value.</p>
+<p>Notice what happens to the color of the house. Color values are <span class="black-bold">interpolated</span> between vertices. This is done by the <span class="glossary-term">pixel shader</span>, which we will cover more in depth in a future tutorial.</p>
+<p>After completing the problem, you should have created some kind of rainbow house.</p>
+<p><img src="images/rainbowhouse.png" width="801" height="598" /></p>
+<p>When you have completed these problems demonstrate your code to the TA's to get credit for the tutorial. </p>
+</body>
+</html>

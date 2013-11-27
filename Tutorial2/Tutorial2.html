@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>COMP2501 - Tutorial 1</title>
+<link href="template.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<p class="header">COMP 2501 - Winter 2014 Tutorial #2</p>
+<p class="header subheader">Transformations</p>
+<hr/>
+<p class="segment-header">Description:</p>
+<p>The purpose of this tutorial is to familiarize yourself with matrix transformations in 2D space. </p>
+<p>To get credit for the tutorial you must complete, or make significant progress, on the problems provided and demonstrate your results to the tutorial TA.<br />
+  <br />
+If you cannot complete the tutorial in the time allotted you may demonstrate the completed results to the TA during their office hours.</p>
+<p>These tutorials are based on the <a target="_blank" href="http://www.rastertek.com/tutdx11.html">Rastertek</a> set of tutorials.</p>
+<hr/>
+<p class="segment-header">Instructions:</p>
+<p class="segment-header black-bold">Overview</p>
+<p>Open <span class="glossary-term">Microsoft Visual Studio 2012</span> and open the project found in the <span class="code">tutorial2</span> folder. Run the project (hit F5), it should build and open a window containing the rainbow house we created during Tutorial 1. For the purpose of this tutorial, the &quot;rainbow house&quot; will actually be a robot body. You will have to use your imagination. You can close this window by pressing Esc.</p>
+<p><img src="images/rainbowhouse.png" alt="initial image" width="801" height="598" /></p>
+<p>&nbsp;</p>
+<p>Take a look at <span class="code"><span class="glossary-term">graphicsclass.cpp</span></span>. This code handles all the DirectX11 graphics code.</p>
+<p>Check out the Render() method. This method is called once a frame and is responsible for sending our three important matrices (World, View, Projection) off to our shader class, which in turn relays them to the shaders themselves. We will be focusing on World matrices for this tutorial.</p>
+<p>Notice these lines:</p>
+<p class="code"><span class="comment">// Get the world, view, and projection matrices from the camera and d3d objects.</span><br />
+m_Camera-&gt;GetViewMatrix(viewMatrix);<br />
+m_D3D-&gt;GetWorldMatrix(worldMatrix);<br />
+m_D3D-&gt;GetProjectionMatrix(projectionMatrix);<br />
+</p>
+<p>We grab the default versions of each of our matrices and store them in local variables. We then send those matrices off to our shader class for rasterization:</p>
+<p class="code"><br />
+  <span class="comment">// Render the model using the color shader.</span><br />
+  result = m_ColorShader-&gt;Render(m_D3D-&gt;GetDeviceContext(), m_Model-&gt;GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix);</p>
+<p>After storing the matrices in local variables, and before sending them off to the shader, we can perform all manner of transformations on them.</p>
+<p>Add the following lines in between the two code snippets above:<span class="code"></span></p>
+<p class="code"><span class="comment">// World transformations</span><br />
+XMStoreFloat4x4( &amp;worldMatrix, XMMatrixRotationZ(XM_PI/4) );<br />
+</p>
+<p>Now run the application. You should see your robot body transformed like this:</p>
+<p><img src="images/transform-1.png" width="999" height="748" alt="transform-1" /></p>
+<p>We've rotated our robot body by 45 degrees about the Z axis. Notice we used radians in the actual rotation, DirectX requires this. Also notice the direction in which the robot body was rotated. DirectX uses a left handed coordinate system. This means that rotations are applied in a counter-clockwise manner and that the positive direction along the Z axis points towards the screen.</p>
+<p><img src="images/lhs.gif" width="360" height="238" /></p>
+<p>This diagram explains left and right handed coordinate systems. Lay either hand out flat in front of you, then curl your fingers in. The direction your thumb points is the positive z-axis and the direction your fingers curl is the direction of rotations in the system.</p>
+<p class="segment-header"><span class="black-bold">Problem 1)</span></p>
+<p> A single matrix can represent multiple transformations. We will be storing all of our world transformations in our worldMatrix. To combine multiple transformations, we multiple the transformation matrices together.</p>
+<p>Using XMMatrixScaling and XMMatrixTranslation, scale your robot body to half its size and then translate it to the top right of the screen. You will have to play with the x and y values to get the shape properly situated.</p>
+<p>After running the application you should produce a screen like this:</p>
+<p><img src="images/transform-scale-then-translate.png" width="996" height="747" alt="scale-then-transform" /></p>
+<p>The order in which we multiple our transformation matrices matters. This is because matrices are not commutative. This means that, in general, in matrix multiplication: AB != BA. Try reversing the order of the matrices. Notice the difference:</p>
+<p><img src="images/transform-translate-then-scale.png" width="996" height="743" /></p>
+<p>See if you can reason out why the final placement of the shape was not the same regardless of the order of operations. Try simulating the operations in order by hand or in your head.</p>
+<p>In general, we use the acronym ISROT (Identity, Scale, Rotation, Orbit, Translation) to determine which order we should perform our transformations in. Theoretically, this order is the easiest to understand and mentally plot.</p>
+<p class="segment-header"><span class="black-bold">Problem 2)</span></p>
+<p>Add a second shape to the mix. The code is set up in a way that it should be relatively easy to add the second shape. We use the same model (vertices) as the robot body, but we use a new world matrix. You will need to increment the number of world matrices and use the Identity matrix ( XMMatrixIdentity() ) as a new entry in our worldMatrices array. The result should look like this:</p>
+<p><img src="images/secondShape.png" width="998" height="749" /></p>
+<p class="segment-header"><span class="black-bold">Problem 3)</span></p>
+<p>Instead of using the Identity matrix for the second shape, use the world matrix from the robot body. </p>
+<p>Note: XMStoreFloat4x4 requires an XMMatrix as its second argument. Our world matrix from the first shape is of type XMFloat4x4. To convert between XMMatrix and XMFloat4x4 we use the XMLoadFloat4x4 method and pass it a reference to the world matrix.</p>
+<p>Your program should now display this:</p>
+<p><img src="images/transform-scale-then-translate.png" width="996" height="747" alt="scale-then-transform" /></p>
+<p>As you can see, it looks as though we are only drawing our robot body. This is not the case, we are in fact drawing both shapes, just one on top of the other. The transform of the second shape relative to the first shape is called a hierarchical transformation. Try applying transforms to the second shape, all the while multiplying by the world matrix from the first shape. Make sure you multiply by the robot body's matrix last.</p>
+<p>See if you can recreate the transformation depicted below. We have positioned our second shape as the left upper arm of our robot.</p>
+<p><img src="images/hierarchical-transform.png" width="997" height="744" /></p>
+<p>Remember that each transformation is applied relative to the parent transform (the robot body's matrix). Therefore, for example, scaling uniformly by 0.5 will make our upper armhalf the size of our robot body, not half the size of our original coordinate system.</p>
+<p><span class="segment-header"><span class="black-bold">Problem 4)</span></span></p>
+<p>We're going to add a lower arm to the robot and make it orbit around the joint (the &quot;elbow&quot;) that attaches it to the upper arm. </p>
+<p>To start, add a lower arm to the robot. Set it up like the following:</p>
+<p><img src="images/three-shapes.png" width="999" height="745" /></p>
+<p>The point between the triangles of the upper and lower arms will form an elbow.</p>
+<p>Once you have the shapes in place, rotate the lower arm around the arm joint, as a normal arm would rotate around the elbow. To do this, add a new calculation after the transformations that position the upper arm. For example (your code may use different numbers):</p>
+<p class="code"><span class="comment">// Transformation to move the lower arm into position</span><br />
+  XMStoreFloat4x4( &amp;worldMatrices[2], XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(2.0f, 2.0f, 0.0f) * XMLoadFloat4x4(&amp;worldMatrices[1]) );</p>
+<p class="code"> <span class="comment">// Transformation to rotate lower arm around joint</span><br />
+  XMStoreFloat4x4( &amp;worldMatrices[2], XMMatrixRotationZ(XM_PI/2) * XMLoadFloat4x4(&amp;worldMatrices[2]) );<br />
+</p>
+<p>Notice now that our rotation has not functioned as intended:</p>
+<p><img src="images/bad-rotation.png" width="999" height="744" /></p>
+<p>The rotation has occurred around the center of our lower arm. What we wanted was for the rotation to occur about the joint of the arm. This is what's called an orbit, and there is a specific way of doing this that can be represented by this series of multiplications:</p>
+<p>O = T^(-1)RT </p>
+<p>In words, we translate the shape so that the origin of our coordinate system is over the point we'd like to rotate around. We then perform the rotation. We then translate the shape back to its original position.</p>
+<p>See if you can rotate the lower arm about the elbow using this knowledge.</p>
+<p>Your finished product should look something like this:</p>
+<p><img src="images/final.png" width="996" height="743" /><br />
+</p>
+</body>
+</html>
