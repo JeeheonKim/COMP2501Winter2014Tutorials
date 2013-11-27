@@ -8,10 +8,9 @@
 
 <body>
 <p class="header">COMP 2501 - Winter 2014 Tutorial #4</p>
-<p class="header subheader">Collision Detection</p>
-<hr/>
+<p class="header subheader">Textures</p><hr/>
 <p class="segment-header">Description:</p>
-<p>The purpose of this tutorial is to familiarize yourself with collisions of objects in 2D space. </p>
+<p>The purpose of this tutorial is to familiarize yourself with textures. </p>
 <p>To get credit for the tutorial you must complete, or make significant progress, on the problems provided and demonstrate your results to the tutorial TA.<br />
   <br />
 If you cannot complete the tutorial in the time allotted you may demonstrate the completed results to the TA during their office hours.</p>
@@ -19,53 +18,52 @@ If you cannot complete the tutorial in the time allotted you may demonstrate the
 <hr/>
 <p class="segment-header">Instructions:</p>
 <p class="segment-header black-bold">Overview</p>
-<p>Open <span class="glossary-term">Microsoft Visual Studio 2012</span> and open the project found in the <span class="code">tutorial4</span> folder. Run the project (hit F5), it should build and open a window containing two robots, with circles drawn around them. One of the robots is controllable by the player using the arrow keys.</p>
-<p><img src="images/initial.png" width="1001" height="748" /></p>
-<p>There have been a number of changes to the code since tutorial 3. Notice the following code in the System class:</p>
-<p class="code"><span class="comment">// Create collision manager</span><br />
-  m_Collisions = new CollisionManager();<br />
-  <br />
-  <span class="comment">// Create the robot</span><br />
-  m_Robot = new Robot(XMFLOAT3(0.0f,0.0f,-0.2f), &quot;circle&quot;);<br />
-m_Robot-&gt;Initialize();</p>
-<p class="code"> <span class="comment">// Create enemy robot</span><br />
-  m_EnemyRobot = new Robot(XMFLOAT3(4.0f, 0.0f, 0.0f), &quot;circle&quot;);<br />
-  m_EnemyRobot-&gt;Initialize();</p>
-<p>We are now creating two robots in our system. Notice we now specify a starting position, as well as a &quot;boundaryType&quot;. The boundary type of the robot determines how it collides with other robots.</p>
-<p>The other thing to notice here is that our system now maintains a <span class="code">CollisionManager</span>. This class is responsible for checking for collisions between the two robots. In the <span class="code">Frame()</span> method we use the CollisionManager's <span class="code">AreColliding()</span> method. If the two robots are colliding, our system tells the player robot to dance (move its arms about).</p>
-<p><span class="code">AreColliding(Robot* a, Robot* b)</span> takes two pointers, each to a different robot. It then determines what kind of collision to check for, &quot;circle&quot; or &quot;square&quot;. The methods for determining whether a collision exists have yet to be implemented. You will be implementing them in this tutorial.</p>
-<p class="black-bold">Problem 1)</p>
-<p>Implement the &quot;circle&quot; collision detection algorithm.</p>
-<p>The algorithm is quite simple. We need to determine the distance between the center point of both objects. This can be found by determining the &quot;hypotenuse&quot; of the right angle triangle formed between the two points, as shown in the diagram below.</p>
-<p><img src="images/circle_collisions.png" width="300" height="247" /></p>
-<p>Once we have the hypotenuse, we check to see if its length is less than the sum of the the radii of both objects. If it is, then the circles are necessarily intersecting. For the sake of this exercise, the &quot;radius&quot; of our robots will be their height.</p>
-<p>Note: You can get the position of a robot by: <span class="code">robot-&gt;GetPosition()</span>, and the x and y coordinates from <span class="code">robot-&gt;GetPosition().x</span> or <span class="code">robot-&gt;GetPosition().y</span>. You can get a robot's height with <span class="code">robot-&gt;GetHeight()</span>.</p>
-<p>The <span class="code">AreColliding()</span> method should return true if the circles are indeed intersecting. If your method works correctly, then the player robot should dance when his circle is intersecting the enemy robot's.</p>
-<p><img src="images/initial-dance.png" width="998" height="746" /></p>
-<p><span class="black-bold">Problem 2)</span></p>
-<p>Change each robot's boundary type to &quot;square&quot;. To do this, simply change &quot;circle&quot; to &quot;square&quot; in our robot initialization methods in <span class="code">SystemClass</span>. When you change this parameter, and run the code, the robots should look like this:</p>
-<p><img src="images/initial-square.png" width="999" height="746" /></p>
-<p>Now implement the &quot;square&quot; collision detection algorithm in the collision manager. This <a href="http://silentmatt.com/rectangle-intersection/">tool</a> can help you to figure out the algorithm needed to check the intersection of two squares. Try dragging the blue square around and noticing the change of values on the top left.</p>
-<p>Note: In the tool, the Y axis is positive in the downwards direction, in DirectX it is positive in the upwards direction.</p>
-<p>If your algorithm is implemented correctly, the player robot will dance when its squares intersects the enemy robot's.</p>
-<p><span class="black-bold">Problem 3)</span></p>
-<p>For this problem we are going to leverage an already existing method to stop our two robots from overlapping.</p>
-<p>Notice the <span class="code">MoveIfNotColliding()</span> method in our collision manager. This method takes three parameters:</p>
-<ul>
-  <li>Robot* a: a pointer to the player robot</li>
-  <li>Robot* b: a pointer to the enemy robot</li>
-  <li>void (Robot::*FuncPtr)(void): a pointer to a function in the Robot class</li>
-</ul>
-<p>This function, as its name suggests, moves the player robot if and only if it does not result in him colliding with the enemy robot. The syntax for calling a function like this is a little confusing so here is an example of how it could be used from the system class:</p>
-<p class="code">m_Collisions-&gt;MoveIfNotColliding(m_Robot, m_EnemyRobot, &amp;Robot::MoveLeft);</p>
-<p>This code will move the player robot left it does not result in him colliding with the enemy robot. In the <span class="code">MoveIfNotColliding()</span>method, you can see how we use the member function pointer.</p>
-<p class="code"><span class="comment">// Move the robot</span><br />
-(a-&gt;*FuncPtr)();</p>
-<p>In the case of the example function call, this is akin to calling:</p>
-<p class="code">a-&gt;MoveLeft();</p>
-<p>Using this information, change code in the System class so that movements are only carried out conditionally.</p>
-<p>Hint: Check where we are currently moving the robot, and make changes there</p>
-<p>Run your program, if you have made the right substitutions, your robot should not be able to overlap the enemy robot using either circle or square collision detection.</p>
-<p><img src="images/circle-no-collide.png" width="994" height="746" /><img src="images/square-no-collide.png" width="999" height="748" /></p>
+<p align="left">This tutorial will explain how to use texturing in DirectX11. Texturing allows us to add photorealism to our scenes by applying photographs and other images onto polygon faces. For example in this tutorial we will take an image like the following:</p>
+<p align="left"><img src="images/robot.jpg" width="305" height="300" /></p>
+<p align="left">And then apply it to the robot from the previous tutorials to produce the following:</p>
+<p align="left"><img src="images/final.png" width="671" height="578" /></p>
+<p align="left">The format of the textures we will be using are .dds files. This is the Direct Draw Surface format that DirectX uses. The tool used to produce .dds files comes with the DirectX SDK. It is under DirectX Utilities and is called DirectX Texture Tool. You can create a new texture of any size and format and then cut and paste your image or other format texture onto it and save it as a .dds file. It is very simple to use.</p>
+<p align="left">And before we get into the code we should discuss how texture mapping works. To map pixels from the .dds image onto the polygon we use what is called the Texel Coordinate System. This system converts the integer value of the pixel into a floating point value between 0.0f and 1.0f. For example if a texture width is 256 pixels wide then the first pixel will map to 0.0f, the 256th pixel will map to 1.0f, and a middle pixel of 128 would map to 0.5f.</p>
+<p align="left">In the texel coordinate system the width value is named &quot;U&quot; and the height value is named &quot;V&quot;. The width goes from 0.0 on the left to 1.0 on the right. The height goes from 0.0 on the top to 1.0 on the bottom. For example top left would be denoted as U 0.0, V 0.0 and bottom right would be denoted as U 1.0, V 1.0. The diagram below illustrates this system:</p>
+<p align="left"><img src="images/texture-coordinates.gif" width="176" height="172" /></p>
+<p align="left">Now that we have a basic understanding of how to map textures onto polygons we can look at the updated frame work for this tutorial.</p>
+<p class="segment-header black-bold">Code</p>
+<p>Open <span class="glossary-term">Microsoft Visual Studio 2012</span> and open the project found in the <span class="code">tutorial5</span> folder. Run the project (hit F5), it should build and open a window like the following:</p>
+<p><img src="images/initial-error.png" width="995" height="748" /></p>
+<p>&nbsp;</p>
+<p>That's right, there's an error with the model. The origin of the error is the Graphics class, in the <span class="code">Initialize()</span> method:</p>
+<p class="code"><span class="comment">// Initialize the model object.</span><br />
+result = m_Model-&gt;Initialize(m_D3D-&gt;GetDevice(), L&quot;../Engine/REPLACE-ME.dds&quot;);<br />
+if(!result)<br />
+{<br />
+MessageBox(hwnd, L&quot;Could not initialize the model object.&quot;, L&quot;Error&quot;, MB_OK);<br />
+return false;<br />
+} </p>
+<p>Notice the &quot;REPLACE-ME.dds&quot; text. This refers to a file in our Engine directory that doesn't actually exist. We need to supply a <em>real</em> .dds texture file that we'll then apply to our robot.</p>
+<p><strong>Problem 1)</strong></p>
+<p>The first step in creating a texture file is to look online for a suitable image, or create your own if you're feeling artsy. A good website that doesn't require any sign-up and offers free textures is <a href="http://www.mayang.com/textures/">Mayang's Free Textures</a>. Choose any image you like that you think might suit your robot and save it onto your computer. </p>
+<p>The next step in creating a texture is to convert our newly downloaded image into a .dds file that our code can understand. To do this we will use a tool that is included in the Windows 8 SDK called DirectX Texture Tool. Start this application.</p>
+<p>Once it's started up, open your downloaded image in the tool. Your screen should look something like this:</p>
+<p><img src="images/texture_tool.png" width="1438" height="742" /></p>
+<p>From here, simply navigate to File -&gt;Save As, and then save your .dds file as &quot;robot&quot; into your source code directory. Congratulations, you've now created a texture file that our application will be able to interpret!</p>
+<p>To load this texture into the application, simply change the &quot;REPLACE-ME.dds&quot; text from before with &quot;robot.dds&quot;. If your texture was saved properly, your robot should now look something like this:</p>
+<p><img src="images/initial.png" width="995" height="748" /></p>
+<p>Hmm.. Something's not right.</p>
+<p><strong>Problem 2)</strong></p>
+<p>The reason our robot looks so strange is because we haven't actually mapped the texture coordinates to our vertices yet, so the program doesn't know how to use the texture file we've provided it.</p>
+<p>Notice an important change in vertextype.h since the last tutorial:</p>
+<p class="code">struct VertexType<br />
+  {<br />
+XMFLOAT3 position;<br />
+XMFLOAT2 texture;<br />
+};</p>
+<p>The VertexType now has a texture component instead of a color component. The texture vector is always U first and V second. For example the first texture coordinate is bottom left of the triangle which corresponds to U 0.0, V 1.0. Use the diagram at the top of this page to figure out what your coordinates need to be. Note that you can change the coordinates to map any part of the texture to any part of the polygon face.</p>
+<p>In case you've forgotten, we specify our robot's vertices in the robot.cpp file. There already exist 5 vertices with position components specified for each, you'll need to add in their texture coordinates. </p>
+<p>Note: Textures are mapped to your polygons the same way colors were, they're <em>interpolated</em>. That means that you don't specify which texture coordinate to use at each pixel of your shape, you just specify what coordinate to use at the vertices and the values in between are estimated in the pixel shader.</p>
+<p>See if you can get a direct mapping onto the polygons, that means no skewing of the textures. So avoid something like this:</p>
+<p><img src="images/bad-texture.png" width="1001" height="743" /></p>
+<p>And go for something more like this:</p>
+<p><img src="images/final.png" alt="" width="975" height="750" /></p>
+<p>Try creating different textures and seeing what kind of different robots you can make!</p>
 </body>
 </html>

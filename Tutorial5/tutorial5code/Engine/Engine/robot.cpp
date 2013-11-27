@@ -28,19 +28,19 @@ void Robot::InitializeModel()
 	m_indices = new unsigned long[m_indexCount];
 	
 	m_vertices[0].position = XMFLOAT3(-0.5f, -0.5f, 0.0f); // Bottom left.
-	//m_vertices[0].texture =` XMFLOAT2(0.0f, 1.0f);
+	m_vertices[0].texture = XMFLOAT2(0.0f, 1.0f);
 	
 	m_vertices[1].position = XMFLOAT3(-0.5f, 0.5f, 0.0f);  // Top left.
-	//m_vertices[1].texture = XMFLOAT2(0.0f, 0.0f);
+	m_vertices[1].texture = XMFLOAT2(0.0f, 0.0f);
 	
 	m_vertices[2].position = XMFLOAT3(0.5f, -0.5f, 0.0f);  // Bottom right.
-	//m_vertices[2].texture = XMFLOAT2(1.0f, 1.0f);
+	m_vertices[2].texture = XMFLOAT2(1.0f, 1.0f);
 	
 	m_vertices[3].position = XMFLOAT3(0.5f, 0.5f, 0.0f);   // Top right.
-	//m_vertices[3].texture = XMFLOAT2(1.0f, 0.0f);
+	m_vertices[3].texture = XMFLOAT2(1.0f, 0.0f);
 	
 	m_vertices[4].position = XMFLOAT3(0.0f, 1.0f, 0.0f);   // Top of triangle
-	//m_vertices[4].texture = XMFLOAT2(0.0f, 1.0f);
+	m_vertices[4].texture = XMFLOAT2(0.0f, 1.0f);
 	
 	// Load the index array with data.
 	m_indices[0] = 0;  // Bottom left.
