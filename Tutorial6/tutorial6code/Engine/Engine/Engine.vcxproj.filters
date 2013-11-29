@@ -91,12 +91,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="light.ps">
-      <Filter>Shader Files</Filter>
-    </None>
-    <None Include="light.vs">
-      <Filter>Shader Files</Filter>
-    </None>
     <None Include="model.ps">
       <Filter>Shader Files</Filter>
     </None>

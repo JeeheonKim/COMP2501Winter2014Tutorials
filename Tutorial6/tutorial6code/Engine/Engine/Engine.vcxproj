@@ -110,8 +110,6 @@
     <ClInclude Include="vertextype.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="light.ps" />
-    <None Include="light.vs" />
     <None Include="model.ps" />
     <None Include="model.vs" />
   </ItemGroup>

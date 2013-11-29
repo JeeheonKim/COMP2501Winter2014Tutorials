@@ -83,7 +83,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd, Rob
 	result = m_ModelShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if(!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the shader object.", L"Error", MB_OK);
 		return false;
 	}
 
@@ -97,9 +97,9 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd, Rob
 	// Initialize the light object.
 	m_Light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);
 	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	m_Light->SetDirection(0.0f, 0.5f, 0.5f);
-	m_Light->SetSpecularColor(1.0f, 1.0f, 1.0f, 1.0f);
-	m_Light->SetSpecularPower(32.0f);
+	m_Light->SetDirection(0.0f, 0.0f, 1.0f);
+	m_Light->SetSpecularColor(1.0f, 0.0f, 1.0f, 1.0f);
+	m_Light->SetSpecularPower(42.0f);
 
 	return true;
 }
@@ -203,9 +203,9 @@ bool GraphicsClass::Render()
 	XMStoreFloat4x4(&worldBody, XMMatrixScaling(3.0f, 3.0f, 1.0f) 
 		* XMMatrixRotationY(m_Robot->GetRotation().y * 0.0174532925f)
 		* XMMatrixTranslation(m_Robot->GetPosition().x, m_Robot->GetPosition().y, m_Robot->GetPosition().z));
-	XMStoreFloat4x4( &worldLeftUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(-0.5f, 0.0f, 0.0f) * XMLoadFloat4x4(&worldBody) );
+	XMStoreFloat4x4( &worldLeftUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(-0.5f, 0.0f, 0.05f) * XMLoadFloat4x4(&worldBody) );
 	XMStoreFloat4x4( &worldLeftForearm, XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(1.0f, 1.0f, -0.1f) * XMLoadFloat4x4(&worldLeftUpper) );
-	XMStoreFloat4x4( &worldRightUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(3 * XM_PI/2) * XMMatrixTranslation(0.5f, 0.0f, 0.0f) * XMLoadFloat4x4(&worldBody) );
+	XMStoreFloat4x4( &worldRightUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(3 * XM_PI/2) * XMMatrixTranslation(0.5f, 0.0f, 0.05f) * XMLoadFloat4x4(&worldBody) );
 	XMStoreFloat4x4( &worldRightForearm, XMMatrixRotationZ(3 * XM_PI/2) * XMMatrixTranslation(-1.0f, 1.0f, -0.1f) * XMLoadFloat4x4(&worldRightUpper) );
 
 	// If robot is dancing, move his arms
@@ -220,8 +220,9 @@ bool GraphicsClass::Render()
 	// Render the model for the first robot using the color shader.
 	for (int i = 0; i < 5; i++)
 	{
-		result = m_ModelShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrices[i], viewMatrix,
-			projectionMatrix, m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Model->GetTexture());
+		result = m_ModelShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrices[i], viewMatrix, projectionMatrix, 
+			m_Model->GetTexture(), m_Light->GetDirection(), m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), 
+			m_Camera->GetPosition(), m_Light->GetSpecularColor(), m_Light->GetSpecularPower());
 	
 		if(!result)
 		{
