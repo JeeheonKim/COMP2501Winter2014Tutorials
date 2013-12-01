@@ -11,7 +11,6 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <D3Dcompiler.h>
-#include <d3dx11async.h>
 #include <fstream>
 using namespace std;
 using namespace DirectX;

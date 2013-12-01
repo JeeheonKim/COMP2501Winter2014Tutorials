@@ -20,7 +20,8 @@ ModelClass::ModelClass(VertexType* vertices, int numvertices, unsigned long* ind
 	m_indexCount = numindices;
 	m_primitive_topology = topology;
 	
-	m_Texture = 0;
+	m_BodyTexture = 0;
+	m_ArmsTexture = 0;
 }
 
 
@@ -33,7 +34,7 @@ ModelClass::~ModelClass()
 {
 }
 
-bool ModelClass::Initialize(ID3D11Device* device, WCHAR* textureFilename)
+bool ModelClass::Initialize(ID3D11Device* device, WCHAR* bodyTextureFilename, WCHAR* armsTextureFilename)
 {
 	bool result;
 
@@ -46,7 +47,7 @@ bool ModelClass::Initialize(ID3D11Device* device, WCHAR* textureFilename)
 	}
 
 	// Load the texture for this model.
-	result = LoadTexture(device, textureFilename);
+	result = LoadTextures(device, bodyTextureFilename, armsTextureFilename);
 	if(!result)
 	{
 		return false;
@@ -62,7 +63,7 @@ void ModelClass::Shutdown()
 	ShutdownBuffers();
 
 	// Release the model texture.
-	ReleaseTexture();
+	ReleaseTextures();
 
 	return;
 }
@@ -82,9 +83,14 @@ int ModelClass::GetIndexCount()
 	return m_indexCount;
 }
 
-ID3D11ShaderResourceView* ModelClass::GetTexture()
+ID3D11ShaderResourceView* ModelClass::GetBodyTexture()
 {
-	return m_Texture->GetTexture();
+	return m_BodyTexture->GetTexture();
+}
+
+ID3D11ShaderResourceView* ModelClass::GetArmsTexture()
+{
+	return m_ArmsTexture->GetTexture();
 }
 
 
@@ -180,20 +186,34 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 	return;
 }
 
-bool ModelClass::LoadTexture(ID3D11Device* device, WCHAR* filename)
+bool ModelClass::LoadTextures(ID3D11Device* device, WCHAR* bodyFilename, WCHAR* armsFilename)
 {
 	bool result;
 
 
-	// Create the texture object.
-	m_Texture = new TextureClass;
-	if(!m_Texture)
+	// Create the body texture object.
+	m_BodyTexture = new TextureClass;
+	if(!m_BodyTexture)
 	{
 		return false;
 	}
 
-	// Initialize the texture object.
-	result = m_Texture->Initialize(device, filename);
+	// Initialize the body texture object.
+	result = m_BodyTexture->Initialize(device, bodyFilename);
+	if(!result)
+	{
+		return false;
+	}
+
+	// Create the arms texture object.
+	m_ArmsTexture = new TextureClass;
+	if(!m_ArmsTexture)
+	{
+		return false;
+	}
+
+	// Initialize the body texture object.
+	result = m_ArmsTexture->Initialize(device, armsFilename);
 	if(!result)
 	{
 		return false;
@@ -202,14 +222,21 @@ bool ModelClass::LoadTexture(ID3D11Device* device, WCHAR* filename)
 	return true;
 }
 
-void ModelClass::ReleaseTexture()
+void ModelClass::ReleaseTextures()
 {
-	// Release the texture object.
-	if(m_Texture)
+	// Release the texture objects.
+	if(m_BodyTexture)
 	{
-		m_Texture->Shutdown();
-		delete m_Texture;
-		m_Texture = 0;
+		m_BodyTexture->Shutdown();
+		delete m_BodyTexture;
+		m_BodyTexture = 0;
+	}
+	
+	if(m_ArmsTexture)
+	{
+		m_ArmsTexture->Shutdown();
+		delete m_ArmsTexture;
+		m_ArmsTexture = 0;
 	}
 
 	return;

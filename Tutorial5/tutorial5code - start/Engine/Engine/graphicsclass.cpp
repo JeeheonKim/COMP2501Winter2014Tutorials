@@ -64,7 +64,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd, Rob
 	}
 
 	// Initialize the model object.
-	result = m_Model->Initialize(m_D3D->GetDevice(), L"../Engine/REPLACE-ME.dds");
+	result = m_Model->Initialize(m_D3D->GetDevice(), L"../Engine/REPLACE-ME-BODY.dds", L"../Engine/REPLACE-ME-BODY.dds");
 	if(!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
@@ -178,7 +178,7 @@ bool GraphicsClass::Render()
 
 	// Set up player robot
 
-	XMStoreFloat4x4(&worldBody, XMMatrixScaling(3.0f, 3.0f, 3.0f) * XMMatrixTranslation(m_Robot->GetPosition().x, m_Robot->GetPosition().y, m_Robot->GetPosition().z));
+	XMStoreFloat4x4( &worldBody, XMMatrixScaling(3.0f, 3.0f, 3.0f) * XMMatrixTranslation(m_Robot->GetPosition().x, m_Robot->GetPosition().y, m_Robot->GetPosition().z) );
 	XMStoreFloat4x4( &worldLeftUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(-0.5f, 0.0f, 0.0f) * XMLoadFloat4x4(&worldBody) );
 	XMStoreFloat4x4( &worldLeftForearm, XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(1.0f, 1.0f, -0.1f) * XMLoadFloat4x4(&worldLeftUpper) );
 	XMStoreFloat4x4( &worldRightUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(3 * XM_PI/2) * XMMatrixTranslation(0.5f, 0.0f, 0.0f) * XMLoadFloat4x4(&worldBody) );
@@ -193,10 +193,17 @@ bool GraphicsClass::Render()
 
 	XMFLOAT4X4 worldMatrices[5] = { worldBody, worldLeftUpper, worldLeftForearm, worldRightUpper, worldRightForearm };
 
-	// Render the model for the first robot using the color shader.
-	for (int i = 0; i < 5; i++)
+	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrices[0], viewMatrix, projectionMatrix, m_Model->GetBodyTexture());
+	
+	if(!result)
 	{
-		result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrices[i], viewMatrix, projectionMatrix, m_Model->GetTexture());
+		return false;
+	}
+
+	// Render the model for the first robot using the color shader.
+	for (int i = 1; i < 5; i++)
+	{
+		result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrices[i], viewMatrix, projectionMatrix, m_Model->GetArmsTexture());
 	
 		if(!result)
 		{

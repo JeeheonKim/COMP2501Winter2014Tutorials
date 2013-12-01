@@ -32,21 +32,22 @@ public:
 	ModelClass(VertexType*, int, unsigned long*, int, D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	~ModelClass();
 
-	bool Initialize(ID3D11Device*, WCHAR*);
+	bool Initialize(ID3D11Device*, WCHAR*, WCHAR*);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 
 	int GetIndexCount();
 
-	ID3D11ShaderResourceView* GetTexture();
+	ID3D11ShaderResourceView* GetBodyTexture();
+	ID3D11ShaderResourceView* GetArmsTexture();
 
 private:
 	bool InitializeBuffers(ID3D11Device*);
 	void ShutdownBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
 
-	bool LoadTexture(ID3D11Device*, WCHAR*);
-	void ReleaseTexture();
+	bool LoadTextures(ID3D11Device*, WCHAR*, WCHAR*);
+	void ReleaseTextures();
 
 private:
 	D3D_PRIMITIVE_TOPOLOGY m_primitive_topology;
@@ -55,7 +56,8 @@ private:
 	VertexType* m_vertices;
 	unsigned long* m_indices;
 
-	TextureClass* m_Texture;
+	TextureClass* m_BodyTexture;
+	TextureClass* m_ArmsTexture;
 };
 
 #endif

@@ -18,11 +18,11 @@ If you cannot complete the tutorial in the time allotted you may demonstrate the
 <hr/>
 <p class="segment-header">Instructions:</p>
 <p class="segment-header black-bold">Overview</p>
-<p align="left">This tutorial will explain how to use texturing in DirectX11. Texturing allows us to add photorealism to our scenes by applying photographs and other images onto polygon faces. For example in this tutorial we will take an image like the following:</p>
-<p align="left"><img src="images/robot.jpg" width="305" height="300" /></p>
+<p align="left">This tutorial will explain how to use texturing in DirectX11. Texturing allows us to add photorealism to our scenes by applying photographs and other images onto polygon faces. For example in this tutorial we will take some images like the following:</p>
+<p align="left"><img src="images/robot.jpg" width="305" height="300" />   <img src="images/BatteredRobot.png" width="326" height="302" /></p>
 <p align="left">And then apply it to the robot from the previous tutorials to produce the following:</p>
-<p align="left"><img src="images/final.png" width="671" height="578" /></p>
-<p align="left">The format of the textures we will be using are .dds files. This is the Direct Draw Surface format that DirectX uses. The tool used to produce .dds files comes with the DirectX SDK. It is under DirectX Utilities and is called DirectX Texture Tool. You can create a new texture of any size and format and then cut and paste your image or other format texture onto it and save it as a .dds file. It is very simple to use.</p>
+<p align="left"><img src="images/final.png" width="739" height="582" /></p>
+<p align="left">The format of the textures we will be using are .dds files. This is the Direct Draw Surface format that DirectX uses. Microsoft Visual Studio 2012 comes with a built-in DDS converter. To access it, simply open an image file in the Visual Studio IDE. From here, you can create a new texture of any size and format and then cut and paste your image or other format texture onto it and save it as a .dds file. It is very simple to use.</p>
 <p align="left">And before we get into the code we should discuss how texture mapping works. To map pixels from the .dds image onto the polygon we use what is called the Texel Coordinate System. This system converts the integer value of the pixel into a floating point value between 0.0f and 1.0f. For example if a texture width is 256 pixels wide then the first pixel will map to 0.0f, the 256th pixel will map to 1.0f, and a middle pixel of 128 would map to 0.5f.</p>
 <p align="left">In the texel coordinate system the width value is named &quot;U&quot; and the height value is named &quot;V&quot;. The width goes from 0.0 on the left to 1.0 on the right. The height goes from 0.0 on the top to 1.0 on the bottom. For example top left would be denoted as U 0.0, V 0.0 and bottom right would be denoted as U 1.0, V 1.0. The diagram below illustrates this system:</p>
 <p align="left"><img src="images/texture-coordinates.gif" width="176" height="172" /></p>
@@ -33,20 +33,20 @@ If you cannot complete the tutorial in the time allotted you may demonstrate the
 <p>&nbsp;</p>
 <p>That's right, there's an error with the model. The origin of the error is the Graphics class, in the <span class="code">Initialize()</span> method:</p>
 <p class="code"><span class="comment">// Initialize the model object.</span><br />
-result = m_Model-&gt;Initialize(m_D3D-&gt;GetDevice(), L&quot;../Engine/REPLACE-ME.dds&quot;);<br />
+result = m_Model-&gt;Initialize(m_D3D-&gt;GetDevice(), L&quot;../Engine/REPLACE-ME-BODY.dds&quot;, L&quot;../Engine/REPLACE-ME-ARMS.dds&quot;);<br />
 if(!result)<br />
 {<br />
 MessageBox(hwnd, L&quot;Could not initialize the model object.&quot;, L&quot;Error&quot;, MB_OK);<br />
 return false;<br />
 } </p>
-<p>Notice the &quot;REPLACE-ME.dds&quot; text. This refers to a file in our Engine directory that doesn't actually exist. We need to supply a <em>real</em> .dds texture file that we'll then apply to our robot.</p>
+<p>Notice the &quot;REPLACE-ME-*.dds&quot; text. These refer to files in our Engine directory that don't actually exist yet. We need to supply .dds textures file that we'll then apply to our robot.</p>
 <p><strong>Problem 1)</strong></p>
-<p>The first step in creating a texture file is to look online for a suitable image, or create your own if you're feeling artsy. A good website that doesn't require any sign-up and offers free textures is <a href="http://www.mayang.com/textures/">Mayang's Free Textures</a>. Choose any image you like that you think might suit your robot and save it onto your computer. </p>
-<p>The next step in creating a texture is to convert our newly downloaded image into a .dds file that our code can understand. To do this we will use a tool that is included in the Windows 8 SDK called DirectX Texture Tool. Start this application.</p>
-<p>Once it's started up, open your downloaded image in the tool. Your screen should look something like this:</p>
-<p><img src="images/texture_tool.png" width="1438" height="742" /></p>
-<p>From here, simply navigate to File -&gt;Save As, and then save your .dds file as &quot;robot&quot; into your source code directory. Congratulations, you've now created a texture file that our application will be able to interpret!</p>
-<p>To load this texture into the application, simply change the &quot;REPLACE-ME.dds&quot; text from before with &quot;robot.dds&quot;. If your texture was saved properly, your robot should now look something like this:</p>
+<p>The first step in creating a texture file is to look online for a suitable image, or create your own if you're feeling artsy. A good website that doesn't require any sign-up and offers free textures is <a href="http://www.mayang.com/textures/">Mayang's Free Textures</a>. You'll need to choose two images, one for the robot's body, and one for the robot's arms. Choose any images you like that you think might suit your robot and save them onto your computer. </p>
+<p>The next step in creating a texture is to convert our newly downloaded image into a .dds file that our code can understand. To do this we will use the built-in Visual Studio 2012 image conversion functionality. </p>
+<p>Open one of your images in the IDE (File-&gt;Open-&gt;File...). Your screen should look something like this:</p>
+<p><img src="images/texture_tool.png" width="1133" height="924" /></p>
+<p>From here, simply navigate to File -&gt;Save [..] As, and then save your file in the &quot;DirectDrawSurface (*.dds)&quot; format. Save it in to your source code directory. Congratulations, you've now created a texture file that our application will be able to interpret!</p>
+<p>To load this texture into the application, simply change the &quot;REPLACE-ME-*.dds&quot; text from before with whatever you named your files. If your texture was saved properly, your robot should now look something like this:</p>
 <p><img src="images/initial.png" width="995" height="748" /></p>
 <p>Hmm.. Something's not right.</p>
 <p><strong>Problem 2)</strong></p>
