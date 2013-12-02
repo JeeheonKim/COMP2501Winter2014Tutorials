@@ -8,10 +8,10 @@
 
 <body>
 <p class="header">COMP 2501 - Winter 2014 Tutorial #4</p>
-<p class="header subheader">Collision Detection</p>
+<p class="header subheader">Movement</p>
 <hr/>
 <p class="segment-header">Description:</p>
-<p>The purpose of this tutorial is to familiarize yourself with collisions of objects . </p>
+<p>The purpose of this tutorial is to familiarize yourself with the movement of objects in 2D space. </p>
 <p>To get credit for the tutorial you must complete, or make significant progress, on the problems provided and demonstrate your results to the tutorial TA.<br />
   <br />
 If you cannot complete the tutorial in the time allotted you may demonstrate the completed results to the TA during their office hours.</p>
@@ -19,53 +19,72 @@ If you cannot complete the tutorial in the time allotted you may demonstrate the
 <hr/>
 <p class="segment-header">Instructions:</p>
 <p class="segment-header black-bold">Overview</p>
-<p>Open <span class="glossary-term">Microsoft Visual Studio 2012</span> and open the project found in the <span class="code">tutorial4</span> folder. Run the project (hit F5), it should build and open a window containing two robots, with circles drawn around them. One of the robots is controllable by the player using the arrow keys.</p>
-<p><img src="images/initial.png" width="1001" height="748" /></p>
-<p>There have been a number of changes to the code since tutorial 3. Notice the following code in the System class:</p>
-<p class="code"><span class="comment">// Create collision manager</span><br />
-  m_Collisions = new CollisionManager();<br />
-  <br />
-  <span class="comment">// Create the robot</span><br />
-  m_Robot = new Robot(XMFLOAT3(0.0f,0.0f,-0.2f), &quot;circle&quot;);<br />
-m_Robot-&gt;Initialize();</p>
-<p class="code"> <span class="comment">// Create enemy robot</span><br />
-  m_EnemyRobot = new Robot(XMFLOAT3(4.0f, 0.0f, 0.0f), &quot;circle&quot;);<br />
-  m_EnemyRobot-&gt;Initialize();</p>
-<p>We are now creating two robots in our system. Notice we now specify a starting position, as well as a &quot;boundaryType&quot;. The boundary type of the robot determines how it collides with other robots.</p>
-<p>The other thing to notice here is that our system now maintains a <span class="code">CollisionManager</span>. This class is responsible for checking for collisions between the two robots. In the <span class="code">Frame()</span> method we use the CollisionManager's <span class="code">AreColliding()</span> method. If the two robots are colliding, our system tells the player robot to dance (move its arms about).</p>
-<p><span class="code">AreColliding(Robot* a, Robot* b)</span> takes two pointers, each to a different robot. It then determines what kind of collision to check for, &quot;circle&quot; or &quot;square&quot;. The methods for determining whether a collision exists have yet to be implemented. You will be implementing them in this tutorial.</p>
+<p>Open <span class="glossary-term">Microsoft Visual Studio 2012</span> and open the project found in the <span class="code">tutorial4</span> folder. Run the project (hit F5), it should build and open a window containing a rainbow robot body. This body is similar to the one we began constructing in tutorial 3, but with added body parts. Our robot now has two arms in two segments each. You can close this window by pressing Esc.</p>
+<p><img src="images/initial-robot.png" width="998" height="746" /></p>
+<p>&nbsp;</p>
+<p>Take a look at <span class="code"><span class="glossary-term">graphicsclass.cpp</span></span>. Our code is very similar to how it looked at the end of tutorial 3, except for a few notable additions.</p>
+<p>Check out the Render() method. You should notice a key change; we are now keeping track of time:</p>
+<p class="code"><span class="comment">// Update our time</span><br />
+static float t = 0.0f;</p>
+<p class="code"> static DWORD dwTimeStart = 0;<br />
+  DWORD dwTimeCur = GetTickCount();<br />
+  if( dwTimeStart == 0 )<br />
+  dwTimeStart = dwTimeCur;<br />
+  t = ( dwTimeCur - dwTimeStart ) / 1000.0f;</p>
+<p><span class="code">GetTickCount()</span> returns the amount of milliseconds that have passed since the system was started, and <span class="code">dwTimeStart</span> stores that value the first time the Render() function is called. Our variable <span class="code">t</span> represents the amount of seconds that have passed since we started rendering. We can use <span class="code">t</span> to make our robot move.</p>
+<p>After the following piece of code:<br />
+  <span class="code">// Body<br />
+XMStoreFloat4x4( &amp;worldBody, XMMatrixScaling(0.5f, 0.5f, 1.0f) );</span></p>
+<p>Add this:<br />
+  <span class="code">// Move body<br />
+XMStoreFloat4x4( &amp;worldBody, XMMatrixTranslation(8*sin(t), 0.0f, 0.0f ) * XMLoadFloat4x4(&amp;worldBody) );</span></p>
+<p>Run the program. Your robot should now be moving back and forth along the x axis. All we've done is apply a translation to the body. We are using the sine function to accomplish this translation. The sine function is useful for this kind of &quot;swinging&quot; motion. If you've forgotten the look of the sine curve, it is included below:</p>
+<p><img src="images/sinecurve.gif" width="552" height="323" /></p>
+<p>&nbsp;</p>
 <p class="black-bold">Problem 1)</p>
-<p>Implement the &quot;circle&quot; collision detection algorithm.</p>
-<p>The algorithm is quite simple. We need to determine the distance between the center point of both objects. This can be found by determining the &quot;hypotenuse&quot; of the right angle triangle formed between the two points, as shown in the diagram below.</p>
-<p><img src="images/circle_collisions.png" width="300" height="247" /></p>
-<p>Once we have the hypotenuse, we check to see if its length is less than the sum of the the radii of both objects. If it is, then the circles are necessarily intersecting. For the sake of this exercise, the &quot;radius&quot; of our robots will be their height.</p>
-<p>Note: You can get the position of a robot by: <span class="code">robot-&gt;GetPosition()</span>, and the x and y coordinates from <span class="code">robot-&gt;GetPosition().x</span> or <span class="code">robot-&gt;GetPosition().y</span>. You can get a robot's height with <span class="code">robot-&gt;GetHeight()</span>.</p>
-<p>The <span class="code">AreColliding()</span> method should return true if the circles are indeed intersecting. If your method works correctly, then the player robot should dance when his circle is intersecting the enemy robot's.</p>
-<p><img src="images/initial-dance.png" width="998" height="746" /></p>
+<p>Modify the sine function from the example given so that your robot doesn't turn around until he reaches the very edge of the screen. If you need a refresher on sine curves, <a href="http://www.regentsprep.org/regents/math/algtrig/ATT7/sinusoidal.htm">this</a> is an excellent resource. Your robot should get at least this far before reversing direction:</p>
+<p><img src="images/robot-reaching-edge.png" width="999" height="746" /></p>
 <p><span class="black-bold">Problem 2)</span></p>
-<p>Change each robot's boundary type to &quot;square&quot;. To do this, simply change &quot;circle&quot; to &quot;square&quot; in our robot initialization methods in <span class="code">SystemClass</span>. When you change this parameter, and run the code, the robots should look like this:</p>
-<p><img src="images/initial-square.png" width="999" height="746" /></p>
-<p>Now implement the &quot;square&quot; collision detection algorithm in the collision manager. This <a href="http://silentmatt.com/rectangle-intersection/">tool</a> can help you to figure out the algorithm needed to check the intersection of two squares. Try dragging the blue square around and noticing the change of values on the top left.</p>
-<p>Note: In the tool, the Y axis is positive in the downwards direction, in DirectX it is positive in the upwards direction.</p>
-<p>If your algorithm is implemented correctly, the player robot will dance when its squares intersects the enemy robot's.</p>
+<p>Using the orbiting technique from the last tutorial, and sine as a function of time (as before), have the robots wave both forerarms move about their elbows (see picture below). In the finished product, the robot should be moving left to right as before, but this time waving both of his arms back and forth.</p>
+<p><em>Reminder</em>: To rotate around an arbitrary point P (in this case you want to rotate around the tip of the triangle at the joint):</p>
+<ol>
+  <li>Translate by -P (so that P is at the origin (0,0,0))</li>
+  <li>Perform the desired rotation</li>
+  <li>Translate by P (to return P to its original location)</li>
+</ol>
+<p>Remember, when trying to situate the tip of the triangle at the origin, that translations applied to the forerarms will occur <em>relative</em> to their parents' world matrices.  That means that, for instance, applying a translation of (2, 0, 0) on either forerarm will actually move the forearm two units to the <em>left</em> instead of the right. This is because, in this frame of reference, the coordinate system has been rotated by 3*Pi (rotated by 3/2 * Pi for the upper arm, and then again by 3/2 * Pi for the forearm) and is therefore upside down.</p>
+<p>In the finished product, your robot should be moving its arms like this:</p>
+<p><img src="images/waving-1.png" width="998" height="748" alt=" " /></p>
+<p><img src="images/waving-2.png" width="996" height="741" /></p>
 <p><span class="black-bold">Problem 3)</span></p>
-<p>For this problem we are going to leverage an already existing method to stop our two robots from overlapping.</p>
-<p>Notice the <span class="code">MoveIfNotColliding()</span> method in our collision manager. This method takes three parameters:</p>
-<ul>
-  <li>Robot* a: a pointer to the player robot</li>
-  <li>Robot* b: a pointer to the enemy robot</li>
-  <li>void (Robot::*FuncPtr)(void): a pointer to a function in the Robot class</li>
-</ul>
-<p>This function, as its name suggests, moves the player robot if and only if it does not result in him colliding with the enemy robot. The syntax for calling a function like this is a little confusing so here is an example of how it could be used from the system class:</p>
-<p class="code">m_Collisions-&gt;MoveIfNotColliding(m_Robot, m_EnemyRobot, &amp;Robot::MoveLeft);</p>
-<p>This code will move the player robot left it does not result in him colliding with the enemy robot. In the <span class="code">MoveIfNotColliding()</span>method, you can see how we use the member function pointer.</p>
-<p class="code"><span class="comment">// Move the robot</span><br />
-(a-&gt;*FuncPtr)();</p>
-<p>In the case of the example function call, this is akin to calling:</p>
-<p class="code">a-&gt;MoveLeft();</p>
-<p>Using this information, change code in the System class so that movements are only carried out conditionally.</p>
-<p>Hint: Check where we are currently moving the robot, and make changes there</p>
-<p>Run your program, if you have made the right substitutions, your robot should not be able to overlap the enemy robot using either circle or square collision detection.</p>
-<p><img src="images/circle-no-collide.png" width="994" height="746" /><img src="images/square-no-collide.png" width="999" height="748" /></p>
+<p>Comment out, or remove, the code that makes the body move back and forth (the arms should still move though). We are going to replace the time-based movement of the body with keyboard controlled movement.</p>
+<p>Notice that since last tutorial we've added a Robot class. This class is very simple, it simply maintains a position and a speed, and has the ability to move left and right. Examine these methods and take the time to understand them.</p>
+<p>We maintain a pointer to an instance of a robot in our SystemClass (<span class="code">systemclass.cpp</span>). During our <span class="code">Initialization()</span> method, we create a new robot, and then pass a pointer to that robot off to our GraphicsClass during its own initialization. </p>
+<p class="code"><span class="comment">// Create the robot</span><br />
+<strong>m_Robot</strong> = new Robot();</p>
+<p class="code"> <span class="comment">// Create the graphics object.  This object will handle rendering all the graphics for this application.</span><br />
+  m_Graphics = new GraphicsClass;<br />
+  if(!m_Graphics)<br />
+  {<br />
+  return false;<br />
+  }<span class="comment"></span></p>
+<p class="code"><span class="comment"> // Initialize the graphics object.</span><br />
+  result = m_Graphics-&gt;Initialize(screenWidth, screenHeight, m_hwnd, <strong>m_Robot</strong>);</p>
+<p>Notice, further down, in the <span class="code">Frame()</span> method:</p>
+<p class="code"><span class="comment">// Move our robot based on input</span><br />
+if ( m_Input-&gt;IsKeyDown(VK_LEFT) )<br />
+m_Robot-&gt;MoveLeft();<br />
+if ( m_Input-&gt;IsKeyDown(VK_RIGHT) )<br />
+m_Robot-&gt;MoveRight();</p>
+<p>Our input class maintains an array of keys and their current state. Here we check to see if the left or right arrow keys are currently being pressed, and we adjust the robot's position accordingly.</p>
+<p>Head back into our graphics class, where we've been doing the graphical transformations. We'd previously set our robot body to move depending on the game time. Remove this, so that when the application is run, the robot is stationary with just his arms flailing around. Instead of time, write code that uses the robot's position to calculate the position of the worldBody matrix.</p>
+<p>Hint: you can get the robot's current position with <span class="code">m_Robot-&gt;GetPosition()</span>.</p>
+<p>Other hint: Store the robot's position matrix in worldBody before applying any scaling or other transformations to the worldBody matrix.</p>
+<p>The robot should now move back and forth when you press the left and right keys on your keyboard.</p>
+<p class="code"><span class="black-bold">Problem 4)</span></p>
+<p>Add the ability to move the robot up and down as well as left and right. If you understand how left and right movement works in our system, then this should be trivial.</p>
+<p>Hint: you will have to make changes to the Robot, SystemClass and GraphicClass classes.</p>
+<p>When completed your robot should be able to move freely about the screen using keyboard input.</p>
+<p><img src="images/free-movement.png" width="997" height="748" /></p>
 </body>
 </html>

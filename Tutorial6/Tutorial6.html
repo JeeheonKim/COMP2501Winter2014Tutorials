@@ -8,9 +8,9 @@
 
 <body>
 <p class="header">COMP 2501 - Winter 2014 Tutorial #6</p>
-<p class="header subheader">Graphics Pipeline</p><hr/>
+<p class="header subheader">Textures</p><hr/>
 <p class="segment-header">Description:</p>
-<p>The purpose of this tutorial is to familiarize yourself with lighting DirectX Graphics Pipeline. </p>
+<p>The purpose of this tutorial is to familiarize yourself with textures. </p>
 <p>To get credit for the tutorial you must complete, or make significant progress, on the problems provided and demonstrate your results to the tutorial TA.<br />
   <br />
 If you cannot complete the tutorial in the time allotted you may demonstrate the completed results to the TA during their office hours.</p>
@@ -18,16 +18,52 @@ If you cannot complete the tutorial in the time allotted you may demonstrate the
 <hr/>
 <p class="segment-header">Instructions:</p>
 <p class="segment-header black-bold">Overview</p>
-<p>In this tutorial we're going to address something that we've glossed over in the past, and that is the graphics pipeline.</p>
+<p align="left">This tutorial will explain how to use texturing in DirectX11. Texturing allows us to add photorealism to our scenes by applying photographs and other images onto polygon faces. For example in this tutorial we will take some images like the following:</p>
+<p align="left"><img src="images/robot.jpg" width="305" height="300" />   <img src="images/BatteredRobot.png" width="326" height="302" /></p>
+<p align="left">And then apply it to the robot from the previous tutorials to produce the following:</p>
+<p align="left"><img src="images/final.png" width="739" height="582" /></p>
+<p align="left">The format of the textures we will be using are .dds files. This is the Direct Draw Surface format that DirectX uses. Microsoft Visual Studio 2012 comes with a built-in DDS converter. To access it, simply open an image file in the Visual Studio IDE. From here, you can create a new texture of any size and format and then cut and paste your image or other format texture onto it and save it as a .dds file. It is very simple to use.</p>
+<p align="left">And before we get into the code we should discuss how texture mapping works. To map pixels from the .dds image onto the polygon we use what is called the Texel Coordinate System. This system converts the integer value of the pixel into a floating point value between 0.0f and 1.0f. For example if a texture width is 256 pixels wide then the first pixel will map to 0.0f, the 256th pixel will map to 1.0f, and a middle pixel of 128 would map to 0.5f.</p>
+<p align="left">In the texel coordinate system the width value is named &quot;U&quot; and the height value is named &quot;V&quot;. The width goes from 0.0 on the left to 1.0 on the right. The height goes from 0.0 on the top to 1.0 on the bottom. For example top left would be denoted as U 0.0, V 0.0 and bottom right would be denoted as U 1.0, V 1.0. The diagram below illustrates this system:</p>
+<p align="left"><img src="images/texture-coordinates.gif" width="176" height="172" /></p>
+<p align="left">Now that we have a basic understanding of how to map textures onto polygons we can look at the updated frame work for this tutorial.</p>
+<p class="segment-header black-bold">Code</p>
+<p>Open <span class="glossary-term">Microsoft Visual Studio 2012</span> and open the project found in the <span class="code">tutorial6</span> folder. Run the project (hit F5), it should build and open a window like the following:</p>
+<p><img src="images/initial-error.png" width="995" height="748" /></p>
 <p>&nbsp;</p>
-<p><img src="images/graphics_pipeline.png" width="348" height="517" /></p>
-<p>This is an image of the DirectX11 graphics pipeline, taken from the <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/bb205123(v=vs.85).aspx">Microsoft Dev Center site</a>. </p>
-<p>Essentially the data flow is as follows:</p>
-<ol>
-  <li><strong>Input Assembler Stage</strong>: The input is prepared to be sent to the shaders. This is where we specify what vertices we'd like to render. It is also where we set up what transformations we'd like applied to them. This constant non-vertex data is stored in the <em>constant buffer</em>, which is passed along to the shaders along with the vertices.</li>
-  <li><strong>Vertex Shader</strong>: At this stage the vertices are processed. This can include any number of operations, but we're only using it for transformations. We use the matrices supplied in the constant buffer to transform the vertices into screen space coordinates. </li>
-</ol>
-<p>In this tutorial we will be covering three types of lighting that you can use in your games. The types are as follows, in escalating order of complexity: ambient, diffuse and specular.</p>
-<p>Before we go over how the lighting itself works</p>
+<p>That's right, there's an error with the model. The origin of the error is the Graphics class, in the <span class="code">Initialize()</span> method:</p>
+<p class="code"><span class="comment">// Initialize the model object.</span><br />
+result = m_Model-&gt;Initialize(m_D3D-&gt;GetDevice(), L&quot;../Engine/REPLACE-ME-BODY.dds&quot;, L&quot;../Engine/REPLACE-ME-ARMS.dds&quot;);<br />
+if(!result)<br />
+{<br />
+MessageBox(hwnd, L&quot;Could not initialize the model object.&quot;, L&quot;Error&quot;, MB_OK);<br />
+return false;<br />
+} </p>
+<p>Notice the &quot;REPLACE-ME-*.dds&quot; text. These refer to files in our Engine directory that don't actually exist yet. We need to supply .dds textures file that we'll then apply to our robot.</p>
+<p><strong>Problem 1)</strong></p>
+<p>The first step in creating a texture file is to look online for a suitable image, or create your own if you're feeling artsy. A good website that doesn't require any sign-up and offers free textures is <a href="http://www.mayang.com/textures/">Mayang's Free Textures</a>. You'll need to choose two images, one for the robot's body, and one for the robot's arms. Choose any images you like that you think might suit your robot and save them onto your computer. </p>
+<p>The next step in creating a texture is to convert our newly downloaded image into a .dds file that our code can understand. To do this we will use the built-in Visual Studio 2012 image conversion functionality. </p>
+<p>Open one of your images in the IDE (File-&gt;Open-&gt;File...). Your screen should look something like this:</p>
+<p><img src="images/texture_tool.png" width="1133" height="924" /></p>
+<p>From here, simply navigate to File -&gt;Save [..] As, and then save your file in the &quot;DirectDrawSurface (*.dds)&quot; format. Save it in to your source code directory. Congratulations, you've now created a texture file that our application will be able to interpret!</p>
+<p>To load this texture into the application, simply change the &quot;REPLACE-ME-*.dds&quot; text from before with whatever you named your files. If your texture was saved properly, your robot should now look something like this:</p>
+<p><img src="images/initial.png" width="995" height="748" /></p>
+<p>Hmm.. Something's not right.</p>
+<p><strong>Problem 2)</strong></p>
+<p>The reason our robot looks so strange is because we haven't actually mapped the texture coordinates to our vertices yet, so the program doesn't know how to use the texture file we've provided it.</p>
+<p>Notice an important change in vertextype.h since the last tutorial:</p>
+<p class="code">struct VertexType<br />
+  {<br />
+XMFLOAT3 position;<br />
+XMFLOAT2 texture;<br />
+};</p>
+<p>The VertexType now has a texture component instead of a color component. The texture vector is always U first and V second. For example the first texture coordinate is bottom left of the triangle which corresponds to U 0.0, V 1.0. Use the diagram at the top of this page to figure out what your coordinates need to be. Note that you can change the coordinates to map any part of the texture to any part of the polygon face.</p>
+<p>In case you've forgotten, we specify our robot's vertices in the robot.cpp file. There already exist 5 vertices with position components specified for each, you'll need to add in their texture coordinates. </p>
+<p>Note: Textures are mapped to your polygons the same way colors were, they're <em>interpolated</em>. That means that you don't specify which texture coordinate to use at each pixel of your shape, you just specify what coordinate to use at the vertices and the values in between are estimated in the pixel shader.</p>
+<p>See if you can get a direct mapping onto the polygons, that means no skewing of the textures. So avoid something like this:</p>
+<p><img src="images/bad-texture.png" width="1001" height="743" /></p>
+<p>And go for something more like this:</p>
+<p><img src="images/final.png" alt="" width="975" height="750" /></p>
+<p>Try creating different textures and seeing what kind of different robots you can make!</p>
 </body>
 </html>

@@ -11,8 +11,6 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 
-#include "vertextype.h"
-
 using namespace DirectX;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -20,10 +18,16 @@ using namespace DirectX;
 ////////////////////////////////////////////////////////////////////////////////
 class ModelClass
 {
+private:
+	struct VertexType
+	{
+		XMFLOAT3 position;
+	    XMFLOAT4 color;
+	};
+
 public:
 	ModelClass();
 	ModelClass(const ModelClass&);
-	ModelClass(VertexType*, int, unsigned long*, int, D3D_PRIMITIVE_TOPOLOGY = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	~ModelClass();
 
 	bool Initialize(ID3D11Device*);
@@ -38,11 +42,8 @@ private:
 	void RenderBuffers(ID3D11DeviceContext*);
 
 private:
-	D3D_PRIMITIVE_TOPOLOGY m_primitive_topology;
 	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;
 	int m_vertexCount, m_indexCount;
-	VertexType* m_vertices;
-	unsigned long* m_indices;
 };
 
 #endif

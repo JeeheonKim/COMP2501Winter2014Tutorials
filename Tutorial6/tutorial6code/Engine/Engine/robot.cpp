@@ -3,7 +3,6 @@
 Robot::Robot(XMFLOAT3 position, std::string boundaryType)
 {
 	m_position = position;
-	m_rotation = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	m_speed = 0.1f;
 	m_height = 2.0f;
 	m_width = 3.0f;
@@ -30,23 +29,18 @@ void Robot::InitializeModel()
 	
 	m_vertices[0].position = XMFLOAT3(-0.5f, -0.5f, 0.0f); // Bottom left.
 	m_vertices[0].texture = XMFLOAT2(0.0f, 1.0f);
-	m_vertices[0].normal = XMFLOAT3(0.0f, 0.0f, -1.0f);
 	
 	m_vertices[1].position = XMFLOAT3(-0.5f, 0.5f, 0.0f);  // Top left.
 	m_vertices[1].texture = XMFLOAT2(0.0f, 0.0f);
-	m_vertices[1].normal = XMFLOAT3(0.0f, 0.0f, -1.0f);
 	
 	m_vertices[2].position = XMFLOAT3(0.5f, -0.5f, 0.0f);  // Bottom right.
 	m_vertices[2].texture = XMFLOAT2(1.0f, 1.0f);
-	m_vertices[2].normal = XMFLOAT3(0.0f, 0.0f, -1.0f);
 	
 	m_vertices[3].position = XMFLOAT3(0.5f, 0.5f, 0.0f);   // Top right.
 	m_vertices[3].texture = XMFLOAT2(1.0f, 0.0f);
-	m_vertices[3].normal = XMFLOAT3(0.0f, 0.0f, -1.0f);
 	
 	m_vertices[4].position = XMFLOAT3(0.0f, 1.0f, 0.0f);   // Top of triangle
 	m_vertices[4].texture = XMFLOAT2(0.0f, 1.0f);
-	m_vertices[4].normal = XMFLOAT3(0.0f, 0.0f, -1.0f);
 	
 	// Load the index array with data.
 	m_indices[0] = 0;  // Bottom left.
@@ -88,11 +82,6 @@ void Robot::SetPosition(float x, float y, float z)
 void Robot::SetPosition(XMFLOAT3 position) 
 {
 	m_position = position;
-}
-
-XMFLOAT3 Robot::GetRotation()
-{
-	return m_rotation;
 }
 
 float Robot::GetSpeed() 
@@ -179,24 +168,4 @@ void Robot::MoveUp()
 void Robot::MoveDown()
 {
 	m_position = XMFLOAT3(m_position.x, m_position.y - m_speed, m_position.z);
-}
-
-void Robot::MoveForward()
-{
-	m_position = XMFLOAT3(m_position.x, m_position.y, m_position.z - m_speed);
-}
-
-void Robot::MoveBackward()
-{
-	m_position = XMFLOAT3(m_position.x, m_position.y, m_position.z + m_speed);
-}
-
-void Robot::RotateLeft()
-{
-	m_rotation.y += 1.0f;
-}
-
-void Robot::RotateRight()
-{
-	m_rotation.y -= 1.0f;
 }

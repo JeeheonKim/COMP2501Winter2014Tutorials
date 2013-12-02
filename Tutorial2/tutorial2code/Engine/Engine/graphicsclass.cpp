@@ -142,9 +142,7 @@ bool GraphicsClass::Frame()
 
 bool GraphicsClass::Render()
 {
-	const int numWorldMatrices = 3;
-	XMFLOAT4X4 worldMatrices[numWorldMatrices];
-	XMFLOAT4X4 viewMatrix, projectionMatrix;
+	XMFLOAT4X4 worldMatrix, viewMatrix, projectionMatrix;
 	bool result;
 
 
@@ -154,39 +152,21 @@ bool GraphicsClass::Render()
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
 
+	// Get the world, view, and projection matrices from the camera and d3d objects.
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_D3D->GetWorldMatrix(worldMatrix);
+	m_D3D->GetProjectionMatrix(projectionMatrix);
+
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_Model->Render(m_D3D->GetDeviceContext());
 
-	// Get the world, view, and projection matrices from the camera and d3d objects.
-	m_Camera->GetViewMatrix(viewMatrix);
-	m_D3D->GetWorldMatrix(worldMatrices[0]);
-	m_D3D->GetProjectionMatrix(projectionMatrix);
-
-	// Robot body
-	XMStoreFloat4x4( &worldMatrices[0], XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(XM_PI/4) * XMMatrixTranslation(4.0f, 3.0f, 0.0f) );
-
-	// Robot upper arm
-	XMStoreFloat4x4( &worldMatrices[1], XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(-1.0f, 0.0f, 0.0f) * XMLoadFloat4x4(&worldMatrices[0]) );
-
-	// Robot lower arm
-
-	// Transformation to move the lower arm into position
-	XMStoreFloat4x4( &worldMatrices[2], XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(2.0f, 2.0f, 0.0f) * XMLoadFloat4x4(&worldMatrices[1]) );
-
-	// Transformation to rotate lower arm around joint
-	XMStoreFloat4x4( &worldMatrices[2],  XMMatrixTranslation(0.0f, -2.0f, 0.0f) * XMMatrixRotationZ(XM_PI/4) * XMMatrixTranslation(0.0f, 2.0f, 0.0f) * XMLoadFloat4x4(&worldMatrices[2]) );
-
 	// Render the model using the color shader.
-	for (int i = 0; i < numWorldMatrices; i++)
+	result = m_ColorShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix);
+	if(!result)
 	{
-		result = m_ColorShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrices[i], viewMatrix, projectionMatrix);
-	
-		if(!result)
-		{
-			return false;
-		}
+		return false;
 	}
-	
+
 	// Present the rendered scene to the screen.
 	m_D3D->EndScene();
 

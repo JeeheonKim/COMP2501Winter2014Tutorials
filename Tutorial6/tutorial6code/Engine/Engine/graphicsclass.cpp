@@ -9,8 +9,7 @@ GraphicsClass::GraphicsClass()
 	m_D3D = 0;
 	m_Camera = 0;
 	m_Model = 0;
-	m_ModelShader = 0;
-	m_Light = 0;
+	m_TextureShader = 0;
 }
 
 
@@ -65,7 +64,7 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd, Rob
 	}
 
 	// Initialize the model object.
-	result = m_Model->Initialize(m_D3D->GetDevice(), L"../Engine/robot.dds");
+	result = m_Model->Initialize(m_D3D->GetDevice(), L"../Engine/robotBody.dds", L"../Engine/robotArms.dds");
 	if(!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
@@ -73,33 +72,19 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd, Rob
 	}
 
 	// Create the texture shader object.
-	m_ModelShader = new ModelShaderClass;
-	if(!m_ModelShader)
+	m_TextureShader = new TextureShaderClass;
+	if(!m_TextureShader)
 	{
 		return false;
 	}
 
 	// Initialize the texture shader object.
-	result = m_ModelShader->Initialize(m_D3D->GetDevice(), hwnd);
+	result = m_TextureShader->Initialize(m_D3D->GetDevice(), hwnd);
 	if(!result)
 	{
-		MessageBox(hwnd, L"Could not initialize the shader object.", L"Error", MB_OK);
+		MessageBox(hwnd, L"Could not initialize the texture shader object.", L"Error", MB_OK);
 		return false;
 	}
-
-	// Create the light object.
-	m_Light = new LightClass;
-	if(!m_Light)
-	{
-		return false;
-	}
-
-	// Initialize the light object.
-	m_Light->SetAmbientColor(0.15f, 0.15f, 0.15f, 1.0f);
-	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	m_Light->SetDirection(0.0f, 0.0f, 1.0f);
-	m_Light->SetSpecularColor(1.0f, 0.0f, 1.0f, 1.0f);
-	m_Light->SetSpecularPower(42.0f);
 
 	return true;
 }
@@ -108,18 +93,11 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd, Rob
 void GraphicsClass::Shutdown()
 {
 	// Release the texture shader object.
-	if(m_ModelShader)
+	if(m_TextureShader)
 	{
-		m_ModelShader->Shutdown();
-		delete m_ModelShader;
-		m_ModelShader = 0;
-	}
-
-	// Release the light object.
-	if(m_Light)
-	{
-		delete m_Light;
-		m_Light = 0;
+		m_TextureShader->Shutdown();
+		delete m_TextureShader;
+		m_TextureShader = 0;
 	}
 
 	// Release the model objects.
@@ -200,12 +178,10 @@ bool GraphicsClass::Render()
 
 	// Set up player robot
 
-	XMStoreFloat4x4(&worldBody, XMMatrixScaling(3.0f, 3.0f, 1.0f) 
-		* XMMatrixRotationY(m_Robot->GetRotation().y * 0.0174532925f)
-		* XMMatrixTranslation(m_Robot->GetPosition().x, m_Robot->GetPosition().y, m_Robot->GetPosition().z));
-	XMStoreFloat4x4( &worldLeftUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(-0.5f, 0.0f, 0.05f) * XMLoadFloat4x4(&worldBody) );
+	XMStoreFloat4x4( &worldBody, XMMatrixScaling(3.0f, 3.0f, 3.0f) * XMMatrixTranslation(m_Robot->GetPosition().x, m_Robot->GetPosition().y, m_Robot->GetPosition().z) );
+	XMStoreFloat4x4( &worldLeftUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(-0.5f, 0.0f, 0.0f) * XMLoadFloat4x4(&worldBody) );
 	XMStoreFloat4x4( &worldLeftForearm, XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(1.0f, 1.0f, -0.1f) * XMLoadFloat4x4(&worldLeftUpper) );
-	XMStoreFloat4x4( &worldRightUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(3 * XM_PI/2) * XMMatrixTranslation(0.5f, 0.0f, 0.05f) * XMLoadFloat4x4(&worldBody) );
+	XMStoreFloat4x4( &worldRightUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(3 * XM_PI/2) * XMMatrixTranslation(0.5f, 0.0f, 0.0f) * XMLoadFloat4x4(&worldBody) );
 	XMStoreFloat4x4( &worldRightForearm, XMMatrixRotationZ(3 * XM_PI/2) * XMMatrixTranslation(-1.0f, 1.0f, -0.1f) * XMLoadFloat4x4(&worldRightUpper) );
 
 	// If robot is dancing, move his arms
@@ -217,12 +193,17 @@ bool GraphicsClass::Render()
 
 	XMFLOAT4X4 worldMatrices[5] = { worldBody, worldLeftUpper, worldLeftForearm, worldRightUpper, worldRightForearm };
 
-	// Render the model for the first robot using the color shader.
-	for (int i = 0; i < 5; i++)
+	result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrices[0], viewMatrix, projectionMatrix, m_Model->GetBodyTexture());
+	
+	if(!result)
 	{
-		result = m_ModelShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrices[i], viewMatrix, projectionMatrix, 
-			m_Model->GetTexture(), m_Light->GetDirection(), m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), 
-			m_Camera->GetPosition(), m_Light->GetSpecularColor(), m_Light->GetSpecularPower());
+		return false;
+	}
+
+	// Render the model for the first robot using the color shader.
+	for (int i = 1; i < 5; i++)
+	{
+		result = m_TextureShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrices[i], viewMatrix, projectionMatrix, m_Model->GetArmsTexture());
 	
 		if(!result)
 		{

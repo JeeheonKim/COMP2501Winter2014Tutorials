@@ -18,6 +18,9 @@
     <ClCompile Include="cameraclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="colorshaderclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="d3dclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -42,15 +45,12 @@
     <ClCompile Include="collisionmanager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="textureclass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="textureshaderclass.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cameraclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="colorshaderclass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="d3dclass.h">
@@ -77,18 +77,12 @@
     <ClInclude Include="collisionmanager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="textureclass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="textureshaderclass.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="texture.vs">
+    <None Include="color.ps">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="texture.ps">
+    <None Include="color.vs">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

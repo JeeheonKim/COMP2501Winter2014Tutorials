@@ -23,7 +23,7 @@ GraphicsClass::~GraphicsClass()
 }
 
 
-bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd, Robot* robot)
+bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd)
 {
 	bool result;
 
@@ -67,9 +67,6 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd, Rob
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
 		return false;
 	}
-
-	// Set robot member variable
-	m_Robot = robot;
 
 	// Create the color shader object.
 	m_ColorShader = new ColorShaderClass;
@@ -145,20 +142,11 @@ bool GraphicsClass::Frame()
 
 bool GraphicsClass::Render()
 {
-	// Update our time	
-	static float t = 0.0f;
-
-    static DWORD dwTimeStart = 0;
-    DWORD dwTimeCur = GetTickCount();
-    if( dwTimeStart == 0 )
-        dwTimeStart = dwTimeCur;
-	t = ( dwTimeCur - dwTimeStart ) / 1000.0f;
-
-	// Matrices
-	XMFLOAT4X4 worldBody, worldLeftUpper, worldLeftForearm, worldRightUpper, worldRightForearm;
+	const int numWorldMatrices = 1;
+	XMFLOAT4X4 worldMatrices[numWorldMatrices];
 	XMFLOAT4X4 viewMatrix, projectionMatrix;
-
 	bool result;
+
 
 	// Clear the buffers to begin the scene.
 	m_D3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
@@ -169,30 +157,13 @@ bool GraphicsClass::Render()
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_Model->Render(m_D3D->GetDeviceContext());
 
-	// Get the view and projection matrices from the camera and d3d objects.
+	// Get the world, view, and projection matrices from the camera and d3d objects.
 	m_Camera->GetViewMatrix(viewMatrix);
+	m_D3D->GetWorldMatrix(worldMatrices[0]);
 	m_D3D->GetProjectionMatrix(projectionMatrix);
-	m_D3D->GetWorldMatrix(worldBody);
-
-	// Body
-	XMStoreFloat4x4( &worldBody, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMLoadFloat4x4(&worldBody));
-	
-	// Left upper arm
-	XMStoreFloat4x4( &worldLeftUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(-1.0f, 0.0f, 0.0f) * XMLoadFloat4x4(&worldBody) );
-
-	// Left forearm
-	XMStoreFloat4x4( &worldLeftForearm, XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(2.0f, 2.0f, 0.0f) * XMLoadFloat4x4(&worldLeftUpper) );
-	
-	// Right upper arm
-	XMStoreFloat4x4( &worldRightUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(3 * XM_PI/2) * XMMatrixTranslation(1.0f, 0.0f, 0.0f) * XMLoadFloat4x4(&worldBody) );
-	
-	// Right forearm
-	XMStoreFloat4x4( &worldRightForearm, XMMatrixRotationZ(3 * XM_PI/2) * XMMatrixTranslation(-2.0f, 2.0f, -0.1f) * XMLoadFloat4x4(&worldRightUpper) );
-	
-	XMFLOAT4X4 worldMatrices[5] = { worldBody, worldLeftUpper, worldLeftForearm, worldRightUpper, worldRightForearm };
 
 	// Render the model using the color shader.
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < numWorldMatrices; i++)
 	{
 		result = m_ColorShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrices[i], viewMatrix, projectionMatrix);
 	

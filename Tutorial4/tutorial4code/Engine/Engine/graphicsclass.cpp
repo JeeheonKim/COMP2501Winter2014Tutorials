@@ -9,7 +9,6 @@ GraphicsClass::GraphicsClass()
 	m_D3D = 0;
 	m_Camera = 0;
 	m_Model = 0;
-	m_ModelBoundary = 0;
 	m_ColorShader = 0;
 }
 
@@ -24,7 +23,7 @@ GraphicsClass::~GraphicsClass()
 }
 
 
-bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd, Robot* robot, Robot* enemyRobot)
+bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd, Robot* robot)
 {
 	bool result;
 
@@ -54,42 +53,23 @@ bool GraphicsClass::Initialize(int screenWidth, int screenHeight, HWND hwnd, Rob
 	// Set the initial position of the camera.
 	m_Camera->SetPosition(0.0f, 0.0f, -10.0f);
 	
-	// Set robot member variable
-	m_Robot = robot;
-	m_EnemyRobot = enemyRobot;
-
-	// Create the model for a robot.
-	m_Model = new ModelClass(m_Robot->GetVertices(), m_Robot->GetVertexCount(), m_Robot->GetIndices(), m_Robot->GetIndexCount());
+	// Create the model object.
+	m_Model = new ModelClass;
 	if(!m_Model)
 	{
 		return false;
 	}
 
-	// Set kind of boundary to draw around a robot
-
-	m_ModelBoundary = new ModelClass(m_Robot->GetBoundaryVertices(), 
-										m_Robot->GetBoundaryVertexCount(), 
-										m_Robot->GetBoundaryIndices(), 
-										m_Robot->GetBoundaryIndexCount(), 
-										D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP);
-	if(!m_ModelBoundary)
-	{
-		return false;
-	}
-
-	// Initialize the model objects.
+	// Initialize the model object.
 	result = m_Model->Initialize(m_D3D->GetDevice());
 	if(!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
 		return false;
 	}
-	result = m_ModelBoundary->Initialize(m_D3D->GetDevice());
-	if(!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the model boundary object.", L"Error", MB_OK);
-		return false;
-	}
+
+	// Set robot member variable
+	m_Robot = robot;
 
 	// Create the color shader object.
 	m_ColorShader = new ColorShaderClass;
@@ -120,19 +100,12 @@ void GraphicsClass::Shutdown()
 		m_ColorShader = 0;
 	}
 
-	// Release the model objects.
+	// Release the model object.
 	if(m_Model)
 	{
 		m_Model->Shutdown();
 		delete m_Model;
 		m_Model = 0;
-	}
-
-	if(m_ModelBoundary)
-	{
-		m_ModelBoundary->Shutdown();
-		delete m_ModelBoundary;
-		m_ModelBoundary = 0;
 	}
 
 	// Release the camera object.
@@ -195,32 +168,38 @@ bool GraphicsClass::Render()
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
 
+	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_Model->Render(m_D3D->GetDeviceContext());
+
 	// Get the view and projection matrices from the camera and d3d objects.
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_D3D->GetProjectionMatrix(projectionMatrix);
 	m_D3D->GetWorldMatrix(worldBody);
 
-	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	m_Model->Render(m_D3D->GetDeviceContext());
+	// Body
+	XMFLOAT3 robotPosition = m_Robot->GetPosition();
+	XMStoreFloat4x4(&worldBody, XMMatrixTranslation(robotPosition.x, robotPosition.y, robotPosition.z));
+	XMStoreFloat4x4( &worldBody, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMLoadFloat4x4(&worldBody));
+	
+	// Left upper arm
+	XMStoreFloat4x4( &worldLeftUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(-1.0f, 0.0f, 0.0f) * XMLoadFloat4x4(&worldBody) );
 
-	// Set up player robot
+	// Left forearm
+	XMStoreFloat4x4( &worldLeftForearm, XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(2.0f, 2.0f, 0.0f) * XMLoadFloat4x4(&worldLeftUpper) );
+	// Move left forearm
+	XMStoreFloat4x4( &worldLeftForearm, XMMatrixTranslation(0.0f, -2.0f, 0.0f) * XMMatrixRotationZ(sin(t)) * XMMatrixTranslation(0.0f, 2.0f, 0.0f) * XMLoadFloat4x4(&worldLeftForearm));
 
-	XMStoreFloat4x4(&worldBody, XMMatrixTranslation(m_Robot->GetPosition().x, m_Robot->GetPosition().y, m_Robot->GetPosition().z));
-	XMStoreFloat4x4( &worldLeftUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(-0.5f, 0.0f, 0.0f) * XMLoadFloat4x4(&worldBody) );
-	XMStoreFloat4x4( &worldLeftForearm, XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(1.0f, 1.0f, -0.1f) * XMLoadFloat4x4(&worldLeftUpper) );
-	XMStoreFloat4x4( &worldRightUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(3 * XM_PI/2) * XMMatrixTranslation(0.5f, 0.0f, 0.0f) * XMLoadFloat4x4(&worldBody) );
-	XMStoreFloat4x4( &worldRightForearm, XMMatrixRotationZ(3 * XM_PI/2) * XMMatrixTranslation(-1.0f, 1.0f, -0.1f) * XMLoadFloat4x4(&worldRightUpper) );
-
-	// If robot is dancing, move his arms
-	if (m_Robot->IsDancing())
-	{
-		XMStoreFloat4x4( &worldLeftForearm, XMMatrixTranslation(0.0f, -1.0f, 0.0f) * XMMatrixRotationZ(sin(t)) * XMMatrixTranslation(0.0f, 1.0f, 0.0f) * XMLoadFloat4x4(&worldLeftForearm));
-		XMStoreFloat4x4( &worldRightForearm, XMMatrixTranslation(0.0f, -1.0f, 0.0f) * XMMatrixRotationZ(sin(t)) * XMMatrixTranslation(0.0f, 1.0f, 0.0f) * XMLoadFloat4x4(&worldRightForearm));
-	}
-
+	// Right upper arm
+	XMStoreFloat4x4( &worldRightUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(3 * XM_PI/2) * XMMatrixTranslation(1.0f, 0.0f, 0.0f) * XMLoadFloat4x4(&worldBody) );
+	
+	// Right forearm
+	XMStoreFloat4x4( &worldRightForearm, XMMatrixRotationZ(3 * XM_PI/2) * XMMatrixTranslation(-2.0f, 2.0f, -0.1f) * XMLoadFloat4x4(&worldRightUpper) );
+	// Move right forearm
+	XMStoreFloat4x4( &worldRightForearm, XMMatrixTranslation(0.0f, -2.0f, 0.0f) * XMMatrixRotationZ(sin(t)) * XMMatrixTranslation(0.0f, 2.0f, 0.0f) * XMLoadFloat4x4(&worldRightForearm));
+	
 	XMFLOAT4X4 worldMatrices[5] = { worldBody, worldLeftUpper, worldLeftForearm, worldRightUpper, worldRightForearm };
 
-	// Render the model for the first robot using the color shader.
+	// Render the model using the color shader.
 	for (int i = 0; i < 5; i++)
 	{
 		result = m_ColorShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrices[i], viewMatrix, projectionMatrix);
@@ -230,49 +209,7 @@ bool GraphicsClass::Render()
 			return false;
 		}
 	}
-
-	// Set up boundary for player robot
-	m_ModelBoundary->Render(m_D3D->GetDeviceContext());
-	result = m_ColorShader->Render(m_D3D->GetDeviceContext(), m_ModelBoundary->GetIndexCount(), worldBody, viewMatrix, projectionMatrix);
 	
-	if(!result)
-	{
-		return false;
-	}
-
-	// Set up the enemy robot
-
-	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	m_Model->Render(m_D3D->GetDeviceContext());
-
-	XMStoreFloat4x4(&worldBody, XMMatrixTranslation(m_EnemyRobot->GetPosition().x, m_EnemyRobot->GetPosition().y, m_EnemyRobot->GetPosition().z));
-	XMStoreFloat4x4( &worldLeftUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(-0.5f, 0.0f, 0.0f) * XMLoadFloat4x4(&worldBody) );
-	XMStoreFloat4x4( &worldLeftForearm, XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(1.0f, 1.0f, -0.1f) * XMLoadFloat4x4(&worldLeftUpper) );
-	XMStoreFloat4x4( &worldRightUpper, XMMatrixScaling(0.5f, 0.5f, 1.0f) * XMMatrixRotationZ(3 * XM_PI/2) * XMMatrixTranslation(0.5f, 0.0f, 0.0f) * XMLoadFloat4x4(&worldBody) );
-	XMStoreFloat4x4( &worldRightForearm, XMMatrixRotationZ(3 * XM_PI/2) * XMMatrixTranslation(-1.0f, 1.0f, -0.1f) * XMLoadFloat4x4(&worldRightUpper) );
-
-	XMFLOAT4X4 worldMatricesEnemy[5] = { worldBody, worldLeftUpper, worldLeftForearm, worldRightUpper, worldRightForearm };
-	for (int i = 0; i < 5; i++)
-	{
-		result = m_ColorShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatricesEnemy[i], viewMatrix, projectionMatrix);
-	
-		if(!result)
-		{
-			return false;
-		}
-	}
-	
-	// Set up the model for the enemy robot
-
-	m_ModelBoundary->Render(m_D3D->GetDeviceContext());
-	result = m_ColorShader->Render(m_D3D->GetDeviceContext(), m_ModelBoundary->GetIndexCount(), worldBody, viewMatrix, projectionMatrix);
-	
-	if(!result)
-	{
-		return false;
-	}
-
-
 	// Present the rendered scene to the screen.
 	m_D3D->EndScene();
 

@@ -8,82 +8,121 @@
 
 <body>
 <p class="header">COMP 2501 - Winter 2014 Tutorial #2</p>
-<p class="header subheader">Transformations</p>
-<hr/>
+<p class="header subheader">Graphics Pipeline</p><hr/>
 <p class="segment-header">Description:</p>
-<p>The purpose of this tutorial is to familiarize yourself with matrix transformations in 2D space. </p>
+<p>The purpose of this tutorial is to introduce you to the DirectX graphics pipeline. These are the most fundamental concepts that you need to understand and utilize to render 3D graphics.</p>
 <p>To get credit for the tutorial you must complete, or make significant progress, on the problems provided and demonstrate your results to the tutorial TA.<br />
-  <br />
 If you cannot complete the tutorial in the time allotted you may demonstrate the completed results to the TA during their office hours.</p>
 <p>These tutorials are based on the <a target="_blank" href="http://www.rastertek.com/tutdx11.html">Rastertek</a> set of tutorials.</p>
 <hr/>
 <p class="segment-header">Instructions:</p>
 <p class="segment-header black-bold">Overview</p>
-<p>Open <span class="glossary-term">Microsoft Visual Studio 2012</span> and open the project found in the <span class="code">tutorial2</span> folder. Run the project (hit F5), it should build and open a window containing the rainbow house we created during Tutorial 1. For the purpose of this tutorial, the &quot;rainbow house&quot; will actually be a robot body. You will have to use your imagination. You can close this window by pressing Esc.</p>
-<p><img src="images/rainbowhouse.png" alt="initial image" width="801" height="598" /></p>
+<p class="segment-header black-bold"></p>
+<p>In this tutorial we're going to address something that we glossed over in the last tutorial, and that is the graphics pipeline.</p>
+<p>From Wikipedia:</p>
+<p><em><strong>Graphics pipeline</strong> or <strong>rendering pipeline</strong> refers to the sequence of steps used to create a 2D raster representation of a 3D scene. Plainly speaking, once you have created a 3D model, for instance, in a video game, or any other 3d computer animation, the graphics pipeline is the process of turning that 3D model into what the computer displays.</em></p>
 <p>&nbsp;</p>
-<p>Take a look at <span class="code"><span class="glossary-term">graphicsclass.cpp</span></span>. This code handles all the DirectX11 graphics code.</p>
-<p>Check out the Render() method. This method is called once a frame and is responsible for sending our three important matrices (World, View, Projection) off to our shader class, which in turn relays them to the shaders themselves. We will be focusing on World matrices for this tutorial.</p>
-<p>Notice these lines:</p>
-<p class="code"><span class="comment">// Get the world, view, and projection matrices from the camera and d3d objects.</span><br />
-m_Camera-&gt;GetViewMatrix(viewMatrix);<br />
-m_D3D-&gt;GetWorldMatrix(worldMatrix);<br />
-m_D3D-&gt;GetProjectionMatrix(projectionMatrix);<br />
-</p>
-<p>We grab the default versions of each of our matrices and store them in local variables. We then send those matrices off to our shader class for rasterization:</p>
+<p><img src="images/graphics_pipeline.png" alt="" width="348" height="517" /></p>
+<p>This is an image of the DirectX11 graphics pipeline, taken from the <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/bb205123(v=vs.85).aspx">Microsoft Dev Center site</a>. </p>
+<p>The stages of data flow that we are concerned about are as follows:</p>
+<ol>
+  <li><strong>Input Assembler Stage</strong>: The input is prepared to be sent to the shaders. This is where we specify what vertices we'd like to render. It is also where we set up what transformations we'd like applied to them. This constant non-vertex data is stored in the <em>constant buffer</em>, which is passed along to the shaders along with the vertices.</li>
+  <li><strong>Vertex Shader Stage</strong>: Vertex shaders are small programs that are written mainly for transforming the vertices from the vertex buffer into 3D space. There are other calculations that can be done such as calculating normals for each vertex. The vertex shader program will be called by the GPU for each vertex it needs to process. For example a 5,000 polygon model will run your vertex shader program 15,000 times each frame just to draw that single model.</li>
+  <li><strong>Geometry Shader Stage:</strong> The geometry shader is a more advanced topic we will not be covering in these tutorials.</li>
+  <li><strong>Rasterizer Stage:</strong> Converts input shapes into pixels for output on a video display</li>
+  <li><strong>Pixel Shader Stage: </strong>The pixel-shader stage receives interpolated data from the vertex shader and generates per-pixel data such as color.</li>
+</ol>
+<p>Shaders in DirectX11 are written using a language called <strong>HLSL</strong> (High-Level Shader Language). The language is very similar to C in syntax.</p>
+<p>Let's get started. Open <span class="glossary-term">Microsoft Visual Studio 2012</span> and open the project found in the <span class="code">tutorial2</span> folder.</p>
+<p><strong>Problem 1)</strong></p>
+<p>Open up the color.vs file (under the Shader Files directory) and take a look around.</p>
+<p>Notice the <strong>MatrixBuffer</strong> constant buffer. This buffer is created in your C++ code and passed into the GPU to the shaders. You can use many types of variables in the constant buffer such as int or float and then set them externally for the shader program to use.</p>
+<p>Moving forwards, we have our <strong>type definitions</strong>. We will use different types such as float4 that are available to HLSL which make programming shaders easier and readable. In this example we are creating types that have x, y, z, w position vectors and red, green, blue, alpha colors. The POSITION, COLOR, and SV_POSITION are semantics that convey to the GPU the use of the variable. We have to create two different structures here since the semantics are different for vertex and pixel shaders even though the structures are the same otherwise. POSITION works for vertex shaders and SV_POSITION works for pixel shaders while COLOR works for both. If you want more than one of the same type then you have to add a number to the end such as COLOR0, COLOR1, and so forth.</p>
+<p align="left">The vertex shader is called by the GPU when it is processing data from the vertex buffers that have been sent to it. This vertex shader which is named <strong>ColorVertexShader</strong> will be called for every single vertex in the vertex buffer. The input to the vertex shader must match the data format in the vertex buffer as well as the type definition in the shader source file which in this case is VertexInputType. The output of the vertex shader will be sent to the pixel shader. In this case the output type is called PixelInputType which is defined above as well.</p>
+<p align="left">With that in mind you see that the vertex shader creates an output variable that is of the PixelInputType type. It then takes the position of the input vertex and multiplies it by the world, view, and then projection matrices. This will place the vertex in the correct location for rendering in 3D space according to our view and then onto the 2D screen. After that the output variable takes a copy of the input color and then returns the output which will be used as input to the pixel shader. Also note that I do set the W value of the input position to 1.0 otherwise it is undefined since we only read in a XYZ vector for position. If you'd like to know more about why we use the W value, see <a href="http://en.wikipedia.org/wiki/Homogeneous_coordinates#Use_in_computer_graphics">here</a>.</p>
+<p>Run the program and see what you get:</p>
+<p><img src="images/rainbowhouse.png" width="801" height="598" /></p>
+<p>The output is the same as our last tutorial. Let's make it a little more interesting. We're going to add a wave effect to the house that will be based on a function of time. As it stands right now, our vertex shader has no idea what time it is. We need to send it along from the CPU. The way to do this in DirectX is with the Constant Buffer.</p>
+<p>Open up the colorshaderclass.h. Notice we have a struct called MatrixBufferType. This is the type we send to the shaders. We need to give it an extra value. Replace this:</p>
+<p class="code">struct MatrixBufferType<br />
+{<br />
+XMFLOAT4X4 world;<br />
+XMFLOAT4X4 view;<br />
+XMFLOAT4X4 projection;<br />
+};</p>
+<p>With this:</p>
+<p class="code">struct MatrixBufferType<br />
+{<br />
+XMFLOAT4X4 world;<br />
+XMFLOAT4X4 view;<br />
+XMFLOAT4X4 projection;<br />
+float time;<br />
+XMFLOAT3 padding;
+<br />
+};</p>
+<p>Note: The &quot;padding&quot; property will not be used, it is only there because we need to align our type to 16 bytes. This means that the combined size of all the properties must be a multiple of 16. </p>
+<p>Next we need to populate this time value.</p>
+<p>In colorshaderclass.cpp, scroll down to the SetShaderParameters method. Notice we are keeping track of time:</p>
 <p class="code"><br />
-  <span class="comment">// Render the model using the color shader.</span><br />
-  result = m_ColorShader-&gt;Render(m_D3D-&gt;GetDeviceContext(), m_Model-&gt;GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix);</p>
-<p>After storing the matrices in local variables, and before sending them off to the shader, we can perform all manner of transformations on them.</p>
-<p>Add the following lines in between the two code snippets above:<span class="code"></span></p>
-<p class="code"><span class="comment">// World transformations</span><br />
-XMStoreFloat4x4( &amp;worldMatrix, XMMatrixRotationZ(XM_PI/4) );<br />
-</p>
-<p>Now run the application. You should see your robot body transformed like this:</p>
-<p><img src="images/transform-1.png" width="999" height="748" alt="transform-1" /></p>
-<p>We've rotated our robot body by 45 degrees about the Z axis. Notice we used radians in the actual rotation, DirectX requires this. Also notice the direction in which the robot body was rotated. DirectX uses a left handed coordinate system. This means that rotations are applied in a counter-clockwise manner and that the positive direction along the Z axis points towards the screen.</p>
-<p><img src="images/lhs.gif" width="360" height="238" /></p>
-<p>This diagram explains left and right handed coordinate systems. Lay either hand out flat in front of you, then curl your fingers in. The direction your thumb points is the positive z-axis and the direction your fingers curl is the direction of rotations in the system.</p>
-<p class="segment-header"><span class="black-bold">Problem 1)</span></p>
-<p> A single matrix can represent multiple transformations. We will be storing all of our world transformations in our worldMatrix. To combine multiple transformations, we multiple the transformation matrices together.</p>
-<p>Using XMMatrixScaling and XMMatrixTranslation, scale your robot body to half its size and then translate it to the top right of the screen. You will have to play with the x and y values to get the shape properly situated.</p>
-<p>After running the application you should produce a screen like this:</p>
-<p><img src="images/transform-scale-then-translate.png" width="996" height="747" alt="scale-then-transform" /></p>
-<p>The order in which we multiple our transformation matrices matters. This is because matrices are not commutative. This means that, in general, in matrix multiplication: AB != BA. Try reversing the order of the matrices. Notice the difference:</p>
-<p><img src="images/transform-translate-then-scale.png" width="996" height="743" /></p>
-<p>See if you can reason out why the final placement of the shape was not the same regardless of the order of operations. Try simulating the operations in order by hand or in your head.</p>
-<p>In general, we use the acronym ISROT (Identity, Scale, Rotation, Orbit, Translation) to determine which order we should perform our transformations in. Theoretically, this order is the easiest to understand and mentally plot.</p>
-<p class="segment-header"><span class="black-bold">Problem 2)</span></p>
-<p>Add a second shape to the mix. The code is set up in a way that it should be relatively easy to add the second shape. We use the same model (vertices) as the robot body, but we use a new world matrix. You will need to increment the number of world matrices and use the Identity matrix ( XMMatrixIdentity() ) as a new entry in our worldMatrices array. The result should look like this:</p>
-<p><img src="images/secondShape.png" width="998" height="749" /></p>
-<p class="segment-header"><span class="black-bold">Problem 3)</span></p>
-<p>Instead of using the Identity matrix for the second shape, use the world matrix from the robot body. </p>
-<p>Note: XMStoreFloat4x4 requires an XMMatrix as its second argument. Our world matrix from the first shape is of type XMFloat4x4. To convert between XMMatrix and XMFloat4x4 we use the XMLoadFloat4x4 method and pass it a reference to the world matrix.</p>
-<p>Your program should now display this:</p>
-<p><img src="images/transform-scale-then-translate.png" width="996" height="747" alt="scale-then-transform" /></p>
-<p>As you can see, it looks as though we are only drawing our robot body. This is not the case, we are in fact drawing both shapes, just one on top of the other. The transform of the second shape relative to the first shape is called a hierarchical transformation. Try applying transforms to the second shape, all the while multiplying by the world matrix from the first shape. Make sure you multiply by the robot body's matrix last.</p>
-<p>See if you can recreate the transformation depicted below. We have positioned our second shape as the left upper arm of our robot.</p>
-<p><img src="images/hierarchical-transform.png" width="997" height="744" /></p>
-<p>Remember that each transformation is applied relative to the parent transform (the robot body's matrix). Therefore, for example, scaling uniformly by 0.5 will make our upper armhalf the size of our robot body, not half the size of our original coordinate system.</p>
-<p><span class="segment-header"><span class="black-bold">Problem 4)</span></span></p>
-<p>We're going to add a lower arm to the robot and make it orbit around the joint (the &quot;elbow&quot;) that attaches it to the upper arm. </p>
-<p>To start, add a lower arm to the robot. Set it up like the following:</p>
-<p><img src="images/three-shapes.png" width="999" height="745" /></p>
-<p>The point between the triangles of the upper and lower arms will form an elbow.</p>
-<p>Once you have the shapes in place, rotate the lower arm around the arm joint, as a normal arm would rotate around the elbow. To do this, add a new calculation after the transformations that position the upper arm. For example (your code may use different numbers):</p>
-<p class="code"><span class="comment">// Transformation to move the lower arm into position</span><br />
-  XMStoreFloat4x4( &amp;worldMatrices[2], XMMatrixRotationZ(XM_PI/2) * XMMatrixTranslation(2.0f, 2.0f, 0.0f) * XMLoadFloat4x4(&amp;worldMatrices[1]) );</p>
-<p class="code"> <span class="comment">// Transformation to rotate lower arm around joint</span><br />
-  XMStoreFloat4x4( &amp;worldMatrices[2], XMMatrixRotationZ(XM_PI/2) * XMLoadFloat4x4(&amp;worldMatrices[2]) );<br />
-</p>
-<p>Notice now that our rotation has not functioned as intended:</p>
-<p><img src="images/bad-rotation.png" width="999" height="744" /></p>
-<p>The rotation has occurred around the center of our lower arm. What we wanted was for the rotation to occur about the joint of the arm. This is what's called an orbit, and there is a specific way of doing this that can be represented by this series of multiplications:</p>
-<p>O = T^(-1)RT </p>
-<p>In words, we translate the shape so that the origin of our coordinate system is over the point we'd like to rotate around. We then perform the rotation. We then translate the shape back to its original position.</p>
-<p>See if you can rotate the lower arm about the elbow using this knowledge.</p>
-<p>Your finished product should look something like this:</p>
-<p><img src="images/final.png" width="996" height="743" /><br />
-</p>
+// Update the time<br />
+static float t = 0.0f;<br />
+static ULONGLONG timeStart = 0;<br />
+ULONGLONG timeCur = GetTickCount64();<br />
+if( timeStart == 0 )<br />
+timeStart = timeCur;<br />
+t = ( timeCur - timeStart ) / 1000.0f;</p>
+<p>Then notice further down, we are initializing and then assigning values to a constant buffer of MatrixBufferType:</p>
+<p class="code">// Get a pointer to the data in the constant buffer.<br />
+dataPtr = (MatrixBufferType*)mappedResource.pData;</p>
+<p class="code"> // Copy the matrices into the constant buffer.<br />
+  dataPtr-&gt;world = worldMatrix;<br />
+  dataPtr-&gt;view = viewMatrix;<br />
+  dataPtr-&gt;projection = projectionMatrix;</p>
+<p>We've set the world, view, and projection matrices, but we still need to set the time property. Add this:</p>
+<p class="code">dataPtr-&gt;time = t;</p>
+<p>Now we've added a property to the constant buffer and assigned it a value. Now, all we need to do is set up the shaders to receive this new property. Head over to your color.vs file.</p>
+<p class="code">cbuffer MatrixBuffer : register(b0)<br />
+  {<br />
+matrix worldMatrix;<br />
+matrix viewMatrix;<br />
+matrix projectionMatrix;<br />
+};</p>
+<p>This typedef has to be updated to be in line with the one we set in our C++ code. Change it to this:<span class="code"></span></p>
+<p class="code">cbuffer MatrixBuffer : register(b0)<br />
+  {<br />
+matrix worldMatrix;<br />
+matrix viewMatrix;<br />
+matrix projectionMatrix;<br />
+float time;<br />
+};</p>
+<p>Note: there is no need to include the &quot;padding&quot; property as we will not be using it.</p>
+<p>We now have our pipeline set up to pass along the time value, now we just need to make use of it. All of the vertex shader calculations take place in the ColorVertexShader method, take a look at it now.</p>
+<p>Before the &quot;<span class="code">return output;</span>&quot; line, add some code that will change the position of the vertex based on the given time. For an interesting effect, try this:<br />
+  <span class="code"><br />
+// Make the vertex move back and forth<br />
+output.position.x += sin( output.position.y/2 + 3*time );</span></p>
+<p>Run the application. Your house should be wobbling back and forth like this:</p>
+<p><img src="images/wobble.png" width="995" height="743" /></p>
+<p><img src="images/wobble2.png" width="1001" height="745" /></p>
+<p><strong>Problem 2)</strong></p>
+<p>Now we're going to experiment with the Pixel Shader. Unfortunately, in the current implementation, the constant buffer is not being used in the pixel shader. Let's change that.</p>
+<p>First, add the MatrixBuffer type to the top of the color.ps file so that our pixel shader knows how to interpret the buffer when it receives it. Now we have to set up the C++ code to actually pass the constant buffer to the pixel shader.</p>
+<p>In colorshaderclass.cpp, at the end of the SetShaderParameters() method, you'll see:</p>
+<p class="code"><br />
+// Finally set the constant buffer in the vertex shader with the updated values.<br />
+deviceContext-&gt;VSSetConstantBuffers(bufferNumber, 1, &amp;m_matrixBuffer);</p>
+<p>This is where we specified that we wanted to send our constant buffer to the vertex shader. All you need to do is specify that you'd like it sent to the pixel shader as well:</p>
+<p class="code"><br />
+// Finally set the constant buffer in the vertex shader with the updated values.<br />
+deviceContext-&gt;VSSetConstantBuffers(bufferNumber, 1, &amp;m_matrixBuffer);<br />
+deviceContext-&gt;PSSetConstantBuffers(bufferNumber, 1, &amp;m_matrixBuffer);</p>
+<p>Great, that's all there is to it. Just open up your color.ps file and fiddle around in the ColorPixelShader method. You can try something like the following to get some color changes going:</p>
+<p class="code"><br />
+input.color.x = sin(time);<br />
+input.color.y = cos(time);</p>
+<p>When you run your program you should see something like the following:</p>
+<p><img src="images/colorchange1.png" width="991" height="743" /></p>
+<p><img src="images/colorchange2.png" width="992" height="746" /></p>
+<p>Although the shaders might seem to provide pretty limited functionality at the moment, they're actually a very powerful set of tools. Later on in the tutorials we'll see how we can use the vertex and pixel shaders for other things, such as textures and lighting calculations. For the time being, just try experimenting with producing different colors and transformations.</p>
 </body>
 </html>

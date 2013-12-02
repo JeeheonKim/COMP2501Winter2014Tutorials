@@ -34,7 +34,7 @@ public:
 	GraphicsClass(const GraphicsClass&);
 	~GraphicsClass();
 
-	bool Initialize(int, int, HWND, Robot*, Robot*);
+	bool Initialize(int, int, HWND, Robot*);
 	void Shutdown();
 	bool Frame();
 
@@ -45,11 +45,9 @@ private:
 	D3DClass* m_D3D;
 	CameraClass* m_Camera;
 	ModelClass* m_Model;
-	ModelClass* m_ModelBoundary;
 	ColorShaderClass* m_ColorShader;
 
 	Robot* m_Robot;
-	Robot* m_EnemyRobot;
 };
 
 #endif

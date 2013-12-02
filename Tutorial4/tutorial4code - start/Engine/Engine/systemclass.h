@@ -22,7 +22,6 @@
 ///////////////////////
 #include "inputclass.h"
 #include "graphicsclass.h"
-#include "collisionmanager.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,9 +53,6 @@ private:
 	InputClass* m_Input;
 	GraphicsClass* m_Graphics;
 	Robot* m_Robot;
-	Robot* m_EnemyRobot;
-
-	CollisionManager* m_Collisions;
 };
 
 

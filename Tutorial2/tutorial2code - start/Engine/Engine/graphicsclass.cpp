@@ -142,9 +142,7 @@ bool GraphicsClass::Frame()
 
 bool GraphicsClass::Render()
 {
-	const int numWorldMatrices = 1;
-	XMFLOAT4X4 worldMatrices[numWorldMatrices];
-	XMFLOAT4X4 viewMatrix, projectionMatrix;
+	XMFLOAT4X4 worldMatrix, viewMatrix, projectionMatrix;
 	bool result;
 
 
@@ -154,25 +152,21 @@ bool GraphicsClass::Render()
 	// Generate the view matrix based on the camera's position.
 	m_Camera->Render();
 
+	// Get the world, view, and projection matrices from the camera and d3d objects.
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_D3D->GetWorldMatrix(worldMatrix);
+	m_D3D->GetProjectionMatrix(projectionMatrix);
+
 	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_Model->Render(m_D3D->GetDeviceContext());
 
-	// Get the world, view, and projection matrices from the camera and d3d objects.
-	m_Camera->GetViewMatrix(viewMatrix);
-	m_D3D->GetWorldMatrix(worldMatrices[0]);
-	m_D3D->GetProjectionMatrix(projectionMatrix);
-
 	// Render the model using the color shader.
-	for (int i = 0; i < numWorldMatrices; i++)
+	result = m_ColorShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix);
+	if(!result)
 	{
-		result = m_ColorShader->Render(m_D3D->GetDeviceContext(), m_Model->GetIndexCount(), worldMatrices[i], viewMatrix, projectionMatrix);
-	
-		if(!result)
-		{
-			return false;
-		}
+		return false;
 	}
-	
+
 	// Present the rendered scene to the screen.
 	m_D3D->EndScene();
 

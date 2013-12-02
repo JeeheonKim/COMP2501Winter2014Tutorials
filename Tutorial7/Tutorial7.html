@@ -7,10 +7,10 @@
 </head>
 
 <body>
-<p class="header">COMP 2501 - Winter 2014 Tutorial #6</p>
-<p class="header subheader">Graphics Pipeline</p><hr/>
+<p class="header">COMP 2501 - Winter 2014 Tutorial #7</p>
+<p class="header subheader">Lighting</p><hr/>
 <p class="segment-header">Description:</p>
-<p>The purpose of this tutorial is to familiarize yourself with lighting DirectX Graphics Pipeline. </p>
+<p>The purpose of this tutorial is to familiarize yourself with lighting in DirectX.</p>
 <p>To get credit for the tutorial you must complete, or make significant progress, on the problems provided and demonstrate your results to the tutorial TA.<br />
   <br />
 If you cannot complete the tutorial in the time allotted you may demonstrate the completed results to the TA during their office hours.</p>
@@ -18,15 +18,6 @@ If you cannot complete the tutorial in the time allotted you may demonstrate the
 <hr/>
 <p class="segment-header">Instructions:</p>
 <p class="segment-header black-bold">Overview</p>
-<p>In this tutorial we're going to address something that we've glossed over in the past, and that is the graphics pipeline.</p>
-<p>&nbsp;</p>
-<p><img src="images/graphics_pipeline.png" width="348" height="517" /></p>
-<p>This is an image of the DirectX11 graphics pipeline, taken from the <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/bb205123(v=vs.85).aspx">Microsoft Dev Center site</a>. </p>
-<p>Essentially the data flow is as follows:</p>
-<ol>
-  <li><strong>Input Assembler Stage</strong>: The input is prepared to be sent to the shaders. This is where we specify what vertices we'd like to render. It is also where we set up what transformations we'd like applied to them. This constant non-vertex data is stored in the <em>constant buffer</em>, which is passed along to the shaders along with the vertices.</li>
-  <li><strong>Vertex Shader</strong>: At this stage the vertices are processed. This can include any number of operations, but we're only using it for transformations. We use the matrices supplied in the constant buffer to transform the vertices into screen space coordinates. </li>
-</ol>
 <p>In this tutorial we will be covering three types of lighting that you can use in your games. The types are as follows, in escalating order of complexity: ambient, diffuse and specular.</p>
 <p>Before we go over how the lighting itself works</p>
 </body>

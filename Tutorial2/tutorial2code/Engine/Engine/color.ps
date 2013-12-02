@@ -2,6 +2,16 @@
 // Filename: color.ps
 ////////////////////////////////////////////////////////////////////////////////
 
+/////////////
+// GLOBALS //
+/////////////
+cbuffer MatrixBuffer : register(b0)
+{
+	matrix worldMatrix;
+	matrix viewMatrix;
+	matrix projectionMatrix;
+	float time;
+};
 
 //////////////
 // TYPEDEFS //
@@ -18,5 +28,7 @@ struct PixelInputType
 ////////////////////////////////////////////////////////////////////////////////
 float4 ColorPixelShader(PixelInputType input) : SV_TARGET
 {
+	input.color.x = sin(time);
+	input.color.y = cos(time);
     return input.color;
 }

@@ -11,7 +11,6 @@
 #include "d3dclass.h"
 #include "cameraclass.h"
 #include "modelclass.h"
-#include "robot.h"
 #include "colorshaderclass.h"
 
 
@@ -34,7 +33,7 @@ public:
 	GraphicsClass(const GraphicsClass&);
 	~GraphicsClass();
 
-	bool Initialize(int, int, HWND, Robot*);
+	bool Initialize(int, int, HWND);
 	void Shutdown();
 	bool Frame();
 
@@ -46,8 +45,6 @@ private:
 	CameraClass* m_Camera;
 	ModelClass* m_Model;
 	ColorShaderClass* m_ColorShader;
-
-	Robot* m_Robot;
 };
 
 #endif

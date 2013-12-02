@@ -27,6 +27,8 @@ private:
 		XMFLOAT4X4 world;
 		XMFLOAT4X4 view;
 		XMFLOAT4X4 projection;
+		float time;
+		XMFLOAT3 padding;
 	};
 
 public:

@@ -269,6 +269,14 @@ bool ColorShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	MatrixBufferType* dataPtr;
 	unsigned int bufferNumber;
 
+	// Update the time
+	static float t = 0.0f;
+    static ULONGLONG timeStart = 0;
+    ULONGLONG timeCur = GetTickCount64();
+    if( timeStart == 0 )
+        timeStart = timeCur;
+    t = ( timeCur - timeStart ) / 1000.0f;
+
 
 	// Transpose the matrices to prepare them for the shader.
 	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(XMLoadFloat4x4(&worldMatrix)));
@@ -289,6 +297,7 @@ bool ColorShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	dataPtr->world = worldMatrix;
 	dataPtr->view = viewMatrix;
 	dataPtr->projection = projectionMatrix;
+	dataPtr->time = t;
 
 	// Unlock the constant buffer.
     deviceContext->Unmap(m_matrixBuffer, 0);
@@ -296,8 +305,9 @@ bool ColorShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	// Set the position of the constant buffer in the vertex shader.
 	bufferNumber = 0;
 
-	// Finanly set the constant buffer in the vertex shader with the updated values.
+	// Finally set the constant buffer in the vertex shader with the updated values.
     deviceContext->VSSetConstantBuffers(bufferNumber, 1, &m_matrixBuffer);
+	deviceContext->PSSetConstantBuffers(bufferNumber, 1, &m_matrixBuffer);
 
 	return true;
 }

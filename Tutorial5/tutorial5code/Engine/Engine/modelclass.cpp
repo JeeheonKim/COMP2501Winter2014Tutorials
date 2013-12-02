@@ -19,9 +19,6 @@ ModelClass::ModelClass(VertexType* vertices, int numvertices, unsigned long* ind
 	m_vertexCount = numvertices;
 	m_indexCount = numindices;
 	m_primitive_topology = topology;
-	
-	m_BodyTexture = 0;
-	m_ArmsTexture = 0;
 }
 
 
@@ -34,20 +31,13 @@ ModelClass::~ModelClass()
 {
 }
 
-bool ModelClass::Initialize(ID3D11Device* device, WCHAR* bodyTextureFilename, WCHAR* armsTextureFilename)
+bool ModelClass::Initialize(ID3D11Device* device)
 {
 	bool result;
 
 
 	// Initialize the vertex and index buffers.
 	result = InitializeBuffers(device);
-	if(!result)
-	{
-		return false;
-	}
-
-	// Load the texture for this model.
-	result = LoadTextures(device, bodyTextureFilename, armsTextureFilename);
 	if(!result)
 	{
 		return false;
@@ -61,9 +51,6 @@ void ModelClass::Shutdown()
 {
 	// Shutdown the vertex and index buffers.
 	ShutdownBuffers();
-
-	// Release the model texture.
-	ReleaseTextures();
 
 	return;
 }
@@ -81,16 +68,6 @@ void ModelClass::Render(ID3D11DeviceContext* deviceContext)
 int ModelClass::GetIndexCount()
 {
 	return m_indexCount;
-}
-
-ID3D11ShaderResourceView* ModelClass::GetBodyTexture()
-{
-	return m_BodyTexture->GetTexture();
-}
-
-ID3D11ShaderResourceView* ModelClass::GetArmsTexture()
-{
-	return m_ArmsTexture->GetTexture();
 }
 
 
@@ -182,62 +159,6 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 
     // Set the type of primitive that should be rendered from this vertex buffer, in this case triangles.
 	deviceContext->IASetPrimitiveTopology(m_primitive_topology);
-
-	return;
-}
-
-bool ModelClass::LoadTextures(ID3D11Device* device, WCHAR* bodyFilename, WCHAR* armsFilename)
-{
-	bool result;
-
-
-	// Create the body texture object.
-	m_BodyTexture = new TextureClass;
-	if(!m_BodyTexture)
-	{
-		return false;
-	}
-
-	// Initialize the body texture object.
-	result = m_BodyTexture->Initialize(device, bodyFilename);
-	if(!result)
-	{
-		return false;
-	}
-
-	// Create the arms texture object.
-	m_ArmsTexture = new TextureClass;
-	if(!m_ArmsTexture)
-	{
-		return false;
-	}
-
-	// Initialize the body texture object.
-	result = m_ArmsTexture->Initialize(device, armsFilename);
-	if(!result)
-	{
-		return false;
-	}
-
-	return true;
-}
-
-void ModelClass::ReleaseTextures()
-{
-	// Release the texture objects.
-	if(m_BodyTexture)
-	{
-		m_BodyTexture->Shutdown();
-		delete m_BodyTexture;
-		m_BodyTexture = 0;
-	}
-	
-	if(m_ArmsTexture)
-	{
-		m_ArmsTexture->Shutdown();
-		delete m_ArmsTexture;
-		m_ArmsTexture = 0;
-	}
 
 	return;
 }

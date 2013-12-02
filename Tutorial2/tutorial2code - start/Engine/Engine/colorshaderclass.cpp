@@ -269,6 +269,14 @@ bool ColorShaderClass::SetShaderParameters(ID3D11DeviceContext* deviceContext, X
 	MatrixBufferType* dataPtr;
 	unsigned int bufferNumber;
 
+	// Update the time
+	static float t = 0.0f;
+    static ULONGLONG timeStart = 0;
+    ULONGLONG timeCur = GetTickCount64();
+    if( timeStart == 0 )
+        timeStart = timeCur;
+    t = ( timeCur - timeStart ) / 1000.0f;
+
 
 	// Transpose the matrices to prepare them for the shader.
 	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(XMLoadFloat4x4(&worldMatrix)));

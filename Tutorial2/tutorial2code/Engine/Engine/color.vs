@@ -6,11 +6,12 @@
 /////////////
 // GLOBALS //
 /////////////
-cbuffer MatrixBuffer
+cbuffer MatrixBuffer : register(b0)
 {
 	matrix worldMatrix;
 	matrix viewMatrix;
 	matrix projectionMatrix;
+	float time;
 };
 
 
@@ -49,5 +50,8 @@ PixelInputType ColorVertexShader(VertexInputType input)
 	// Store the input color for the pixel shader to use.
     output.color = input.color;
     
+	// Make the vertex move back and forth
+	output.position.x += sin( output.position.y/2 + 3*time );
+
     return output;
 }

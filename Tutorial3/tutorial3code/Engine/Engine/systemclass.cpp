@@ -43,9 +43,6 @@ bool SystemClass::Initialize()
 
 	// Initialize the input object.
 	m_Input->Initialize();
-	
-	// Create the robot
-	m_Robot = new Robot();
 
 	// Create the graphics object.  This object will handle rendering all the graphics for this application.
 	m_Graphics = new GraphicsClass;
@@ -55,7 +52,7 @@ bool SystemClass::Initialize()
 	}
 
 	// Initialize the graphics object.
-	result = m_Graphics->Initialize(screenWidth, screenHeight, m_hwnd, m_Robot);
+	result = m_Graphics->Initialize(screenWidth, screenHeight, m_hwnd);
 	if(!result)
 	{
 		return false;
@@ -81,10 +78,6 @@ void SystemClass::Shutdown()
 		delete m_Input;
 		m_Input = 0;
 	}
-
-	// Delete robot
-	delete m_Robot;
-	m_Robot = 0;
 
 	// Shutdown the window.
 	ShutdownWindows();
@@ -144,16 +137,6 @@ bool SystemClass::Frame()
 	{
 		return false;
 	}
-
-	// Move our robot based on input
-	if ( m_Input->IsKeyDown(VK_LEFT) )
-		m_Robot->MoveLeft();
-	if ( m_Input->IsKeyDown(VK_RIGHT) )
-		m_Robot->MoveRight();
-	if ( m_Input->IsKeyDown(VK_UP) )
-		m_Robot->MoveUp();
-	if ( m_Input->IsKeyDown(VK_DOWN) )
-		m_Robot->MoveDown();
 
 	// Do the frame processing for the graphics object.
 	result = m_Graphics->Frame();

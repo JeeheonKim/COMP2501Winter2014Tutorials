@@ -52,7 +52,6 @@ private:
 
 	InputClass* m_Input;
 	GraphicsClass* m_Graphics;
-	Robot* m_Robot;
 };
 
 

@@ -50,6 +50,10 @@ bool SystemClass::Initialize()
 	m_Robot = new Robot(XMFLOAT3(0.0f,0.0f,-0.2f), "circle");
 	m_Robot->Initialize();
 
+	// Create enemy robot
+	m_EnemyRobot = new Robot(XMFLOAT3(4.0f, 0.0f, 0.0f), "circle");
+	m_EnemyRobot->Initialize();
+
 	// Create the graphics object.  This object will handle rendering all the graphics for this application.
 	m_Graphics = new GraphicsClass;
 	if(!m_Graphics)
@@ -59,7 +63,7 @@ bool SystemClass::Initialize()
 
 	// Initialize the graphics object. 	Engine.exe!WinMain(HINSTANCE__ * hInstance, HINSTANCE__ * hPrevInstance, char * pScmdline, int iCmdshow) Line 21	C++
 
-	result = m_Graphics->Initialize(screenWidth, screenHeight, m_hwnd, m_Robot);
+	result = m_Graphics->Initialize(screenWidth, screenHeight, m_hwnd, m_Robot, m_EnemyRobot);
 	if(!result)
 	{
 		return false;
@@ -77,6 +81,13 @@ void SystemClass::Shutdown()
 		m_Robot->Shutdown();
 		delete m_Robot;
 		m_Robot = 0;
+	}
+
+	if(m_EnemyRobot)
+	{
+		m_EnemyRobot->Shutdown();
+		delete m_EnemyRobot;
+		m_EnemyRobot = 0;
 	}
 
 	// Release the graphics object.
@@ -160,7 +171,6 @@ bool SystemClass::Frame()
 	}
 
 	// Move our robot based on input
-
 	if ( m_Input->IsKeyDown(VK_LEFT) )
 		m_Robot->MoveLeft();
 	if ( m_Input->IsKeyDown(VK_RIGHT) )
@@ -169,6 +179,10 @@ bool SystemClass::Frame()
 		m_Robot->MoveUp();
 	if ( m_Input->IsKeyDown(VK_DOWN) )
 		m_Robot->MoveDown();
+
+	// Check if two robots are colliding, if so, make the player robot dance
+	if (m_Collisions->AreColliding(m_Robot, m_EnemyRobot)) m_Robot->SetDancing(true);
+	else m_Robot->SetDancing(false);
 
 	// Do the frame processing for the graphics object.
 	result = m_Graphics->Frame();

@@ -31,6 +31,10 @@ public:
 	int				GetVertexCount();
 	int				GetIndexCount();
 
+	VertexType*		GetBoundaryVertices();
+	unsigned long*	GetBoundaryIndices();
+	int				GetBoundaryVertexCount();
+	int				GetBoundaryIndexCount();
 
 	std::string		GetBoundaryType();
 
@@ -45,6 +49,7 @@ public:
 
 private:
 	void			InitializeModel();
+	void			InitializeModelBoundary();
 private:
 	XMFLOAT3		m_position;
 	float			m_speed;
@@ -56,6 +61,12 @@ private:
 	int				m_vertexCount;
 	int				m_indexCount;
 
+	VertexType*		m_boundaryVertices;
+	unsigned long*	m_boundaryIndices;
+	int				m_boundaryVertexCount;
+	int				m_boundaryIndexCount;
+
+	XMFLOAT4		m_boundaryColor;
 	std::string		m_boundaryType;
 
 	bool			m_isDancing;

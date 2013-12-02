@@ -42,9 +42,6 @@
     <ClCompile Include="robot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="collisionmanager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cameraclass.h">
@@ -69,12 +66,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="robot.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vertextype.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="collisionmanager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
