@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>COMP2501 - Tutorial 1</title>
+<link href="template.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+<p class="header">COMP 2501 - Winter 2014 Tutorial #8</p>
+<p class="header subheader">DirectXTK and Debugging</p><hr/>
+<p class="segment-header">Description:</p>
+<p>The purpose of this tutorial is to familiarize yourself with DirectXTK and debugging.</p>
+<p>To get credit for the tutorial you must complete, or make significant progress, on the problems provided and demonstrate your results to the tutorial TA.<br />
+  <br />
+If you cannot complete the tutorial in the time allotted you may demonstrate the completed results to the TA during their office hours.</p>
+<p>This tutorial is based on and adapted version of the <a href="http://code.msdn.microsoft.com/DirectXTK-Simple-Win32-23db418a">DirectXTK Simple Sample</a>.</p>
+<hr/>
+<p class="segment-header">Instructions:</p>
+<p class="segment-header black-bold">Overview</p>
+<p>The DirectX Tool Kit (DirectXTK) is a collection of helper classes for writing Direct3D 11 C++ code. This tutorial will familiarize you with those tools and how you can use them to help you debug your game. Notice that our solution is now composed of two projects:</p>
+<p><img src="images/twoprojects.png" width="417" height="92" /></p>
+<p>SimpleSample is the application we will be running, and DirectXTK_Desktop_2012 is the Desktop flavour of the DirectXTK Library. We don't execute this code directly, we simply reference it from SimpleSample.</p>
+<p><strong>NOTE</strong>: You can include DirectXTK in your own projects as well. All you need is a copy of the DirectXTK code, available from their <a href="https://directxtk.codeplex.com/">website</a>. Once you have it, all you need to do is place it in your source directory, and then reference it like we're doing in this project:</p>
+<p><img src="images/includes.png" width="298" height="244" /></p>
+<p>You don't need to include all of the headers listed above, just the ones that you're going to make use of. More on that later.</p>
+<p>Run SimpleSample:</p>
+<p><img src="images/start.png" width="654" height="526" /></p>
+<p>&nbsp;</p>
+<p>Our code doesn't do very much now, except display a blue screen. Let's change that.</p>
+<p><strong>Problem 1)</strong></p>
+<p>One thing that can make the development of games much easier is a frame of reference. Let's add that to our screen in the form of a grid.</p>
+<p>The PrimitiveBatch library is a simple way to draw user primitives (such as lines or triangles) to the screen. It is simpler than using the Vertex and Index buffers, but not as efficient, so it is generally only used for debug rendering.</p>
+<p>We've already configured and set up the variables needed to make use of this library. You'll notice a DrawGrid() method. This is what you'll need to complete. The function you'll want to make use of is the following:</p>
+<pre>g_Batch-&gt;DrawLine(VertexPositionColor(...), VertexPositionColor(...));</pre>
+<p>This function draws a line between two points, each specified by a VertexPositionColor. A VertexPositionColor is just a vertex that holds data for a position and a color, like we've done before. To create a VertexPositionColor, you can write something like the following:<span class="code"></span></p>
+<p class="code"><br />
+XMFLOAT3 pos = XMFLOAT3(1.0f, 0.0f, 0.0f);<br />
+XMVECTORF32 col = Colors::Gray;<br />
+VertexPositionColor v = VertexPositionColor(XMLoadFloat3(&amp;pos), col);</p>
+<p>You'll need to make use of both for loops, and the already defined variables (numRows, numColumns, minX etc.) to draw the grid, or, if you think of a better way, you're welcome to implement it.</p>
+<p>You should create something like the following:</p>
+<p><img src="images/grid.png" width="1218" height="805" /></p>
+<p>Now you have a grid that you could use to position elements around the screen in an accurate way.</p>
+<p><strong>Problem 2)</strong></p>
+<p> Right now our grid is pretty plain. Let's improve it.</p>
+<p>First, use your knowledge of drawing lines to draw red lines down the x and y axes, like this:</p>
+<p><img src="images/axes.png" width="1217" height="803" /></p>
+<p>Next, we're going to label these axes. The SpriteFont class provides functionality for rendering text to the screen. It is similar to the SpriteFont class from XNA. It is used in the following way:</p>
+<p class="code"><span class="comment">// Draw sprite</span><br />
+g_Sprites-&gt;Begin( SpriteSortMode_Deferred );<br />
+<br />
+g_Font-&gt;DrawString( g_Sprites.get(), L&quot;hello world&quot;, XMFLOAT2( 100, 10 ), Colors::Yellow );<br />
+</p>
+<p class="code">g_Sprites-&gt;End(); </p>
+<p>The DrawString() method takes a reference to our spritebatch, a string to render, a position to render the string at (in pixels), and a color to apply to the text. </p>
+<p>You will notice at the bottom of the Render() method, we have the first and last lines are already implemented:</p>
+<p class="code"><span class="comment">// Draw sprite</span><br />
+g_Sprites-&gt;Begin( SpriteSortMode_Deferred );</p>
+<p class="code"><br />
+  g_Sprites-&gt;End();</p>
+<p>Call the DrawString() method and add a yellow &quot;0&quot; to the origin of the grid. </p>
+<p>The origin of the grid is located at the exact centre of the screen. The screen measures 1200 pixels X 768 pixels. In DirectXTK, things are drawn to the screen using a coordinate system that begins at the top left, like the following:</p>
+<p><img src="images/coordinate.jpg" width="459" height="256" /></p>
+<p>Using this information, place the &quot;0&quot; at the origin, like this:</p>
+<p><img src="images/origin.png" width="1217" height="807" /></p>
+<p>Add an &quot;x&quot; and &quot;y&quot; label to each axis to finish up the grid:</p>
+<p><img src="images/labeledaxes.png" width="1214" height="805" /></p>
+<p><strong>Problem 3)</strong></p>
+<p>We're now going to add some text to tell us where our mouse cursor is.</p>
+<p>To figure out where our mouse cursor is on your screen use:</p>
+<p class="code">POINT cursorPos;<br />
+GetCursorPos(&amp;cursorPos);</p>
+<p>This will give you the position of your cursor relative to your whole screen. To constrain that to the game window use:</p>
+<p><span class="code">ScreenToClient(g_hWnd, &amp;cursorPos);</span><br />
+</p>
+<p>You now have the position of your cursor relative to the game window. Use this to draw the coordinates in the upper left corner of the screen.</p>
+<p><strong>Note</strong>: You can convert the long returned from cursorPos.x or cursorPos.y to a wchar (to be used in DrawString()) by doing the following:</p>
+<p class="code"><br />
+long xLong = cursorPos.x;</p>
+<p class="code"> std::wostringstream woss;<br />
+  woss &lt;&lt; xLong;<br />
+  const std::wstring&amp; xString = woss.str();</p>
+<p class="code">g_Font-&gt;DrawString( g_Sprites.get(), xString.c_str(), XMFLOAT2( 0, 0 ), Colors::Yellow );</p>
+<p>Draw the coordinates to the screen like this:</p>
+<p><img src="images/coordinates.png" width="1217" height="805" /></p>
+<p><strong>Problem 4)</strong></p>
+<p>Convert window-based coordinates from the previous problem into your own grid-based coordinates, so that x and y are both 0 when the cursor is at the origin of the coordinate system.</p>
+</body>
+</html>
