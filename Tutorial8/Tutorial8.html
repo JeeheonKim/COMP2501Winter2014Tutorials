@@ -71,7 +71,10 @@ g_Sprites-&gt;Begin( SpriteSortMode_Deferred );</p>
 <p>To figure out where our mouse cursor is on your screen use:</p>
 <p class="code">POINT cursorPos;<br />
 GetCursorPos(&amp;cursorPos);</p>
-<p>This will give you the position of your cursor relative to your whole screen. To constrain that to the game window use:</p>
+<p>This will give you the position of your cursor relative to your whole screen. You can access the x or y coordinates like this:</p>
+<p class="code">long xLong = cursorPos.x;<br />
+long yLong = cursorPos.y;</p>
+<p>To constrain that to the game window use:</p>
 <p><span class="code">ScreenToClient(g_hWnd, &amp;cursorPos);</span><br />
 </p>
 <p>You now have the position of your cursor relative to the game window. Use this to draw the coordinates in the upper left corner of the screen.</p>
@@ -86,5 +89,8 @@ long xLong = cursorPos.x;</p>
 <p><img src="images/coordinates.png" width="1217" height="805" /></p>
 <p><strong>Problem 4)</strong></p>
 <p>Convert window-based coordinates from the previous problem into your own grid-based coordinates, so that x and y are both 0 when the cursor is at the origin of the coordinate system.</p>
+<p><img src="images/coordinatesorigin.png" width="1215" height="805" /></p>
+<p>&nbsp;</p>
+<p><img src="images/propercoordinates.png" width="1217" height="801" /></p>
 </body>
 </html>

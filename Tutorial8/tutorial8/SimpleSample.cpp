@@ -18,16 +18,12 @@
 #include <windows.h>
 
 #include <d3d11.h>
-#include "wchar.h"
 
 #include <directxmath.h>
 
 // DirectXTK includes
-#include "CommonStates.h"
-#include "DDSTextureLoader.h"
 #include "Effects.h"
 #include "GeometricPrimitive.h"
-#include "Model.h"
 #include "PrimitiveBatch.h"
 #include "ScreenGrab.h"
 #include "SpriteBatch.h"
@@ -55,9 +51,7 @@ ID3D11DepthStencilView*             g_pDepthStencilView = nullptr;
 
 ID3D11InputLayout*                  g_pBatchInputLayout = nullptr;
 
-std::unique_ptr<CommonStates>                           g_States;
 std::unique_ptr<BasicEffect>                            g_BatchEffect;
-std::unique_ptr<EffectFactory>                          g_FXFactory;
 std::unique_ptr<GeometricPrimitive>                     g_Shape;
 std::unique_ptr<PrimitiveBatch<VertexPositionColor>>    g_Batch;
 std::unique_ptr<SpriteBatch>                            g_Sprites;
@@ -264,9 +258,7 @@ HRESULT InitDevice()
     g_pImmediateContext->RSSetViewports( 1, &vp );
 
     // Create DirectXTK objects
-    g_States.reset( new CommonStates( g_pd3dDevice ) );
     g_Sprites.reset( new SpriteBatch( g_pImmediateContext ) );
-    g_FXFactory.reset( new EffectFactory( g_pd3dDevice ) );
     g_Batch.reset( new PrimitiveBatch<VertexPositionColor>( g_pImmediateContext ) );
 
     g_BatchEffect.reset( new BasicEffect( g_pd3dDevice ) );
@@ -287,8 +279,6 @@ HRESULT InitDevice()
     }
 
     g_Font.reset( new SpriteFont( g_pd3dDevice, L"italic.spritefont" ) );
-
-    g_Shape = GeometricPrimitive::CreateTeapot( g_pImmediateContext, 4.f, 8, false );
 
     // Initialize the world matrices
     g_World = XMMatrixIdentity();
@@ -444,8 +434,8 @@ void Render()
 	GetCursorPos(&cursorPos);
 	ScreenToClient(g_hWnd, &cursorPos);
 
-	long xLong = cursorPos.x;
-	long yLong = cursorPos.y;
+	long xLong = cursorPos.x - 600;
+	long yLong = -(cursorPos.y - 384);
 
 	std::wostringstream wossX;
 	wossX << xLong;
