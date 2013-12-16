@@ -66,10 +66,13 @@ XMMATRIX                            g_Projection;
 // Spritesheet properties
 float g_SpriteSheetWidth;
 float g_SpriteSheetHeight;
-float g_SpriteSheetNumColumns;
-float g_SpriteSheetNumRows;
 float g_SpriteSheetFrameWidth;
 float g_SpriteSheetFrameHeight;
+int g_SpriteSheetNumColumns;
+int g_SpriteSheetNumRows;
+int g_SpriteSheetCurrentColumn;
+int g_SpriteSheetAnimationFrameRate;
+int g_SpriteSheetLastRecordedTime;
 
 //--------------------------------------------------------------------------------------
 // Forward declarations
@@ -79,7 +82,7 @@ HRESULT InitDevice();
 void CleanupDevice();
 LRESULT CALLBACK    WndProc( HWND, UINT, WPARAM, LPARAM );
 void Render();
-
+void DrawSprite(float t);
 
 //--------------------------------------------------------------------------------------
 // Entry point to the program. Initializes everything and goes into a message processing 
@@ -307,6 +310,9 @@ HRESULT InitDevice()
 	g_SpriteSheetNumRows = 8;
 	g_SpriteSheetFrameWidth = desc.Width / g_SpriteSheetNumColumns;
 	g_SpriteSheetFrameHeight = desc.Height / g_SpriteSheetNumRows;
+	g_SpriteSheetCurrentColumn = 0;
+	g_SpriteSheetAnimationFrameRate = 100;
+	g_SpriteSheetLastRecordedTime = 0;
 
     // Initialize the world matrices
     g_World = XMMatrixIdentity();
@@ -479,8 +485,8 @@ void Render()
     // Draw sprite
     g_Sprites->Begin( SpriteSortMode_Deferred );
 
-    g_Sprites->Draw( g_pTextureBirdSheet, XMFLOAT2(10, 75 ), nullptr, Colors::White );
-    
+	DrawSprite(t);
+
 	g_Font->DrawString( g_Sprites.get(), L"0", XMFLOAT2( 600, 384 ), Colors::Yellow );
 	g_Font->DrawString( g_Sprites.get(), L"x", XMFLOAT2( 1100, 384 ), Colors::Yellow );
 	g_Font->DrawString( g_Sprites.get(), L"y", XMFLOAT2( 600, 0 ), Colors::Yellow );
@@ -496,4 +502,24 @@ void Render()
     // Present our back buffer to our front buffer
     //
     g_pSwapChain->Present( 0, 0 );
+}
+
+void DrawSprite(float elapsedSeconds)
+{
+	int elapsedMilliseconds = elapsedSeconds*1000;
+	//move to the next frame on the sprite sheet
+	if (elapsedMilliseconds - g_SpriteSheetLastRecordedTime > g_SpriteSheetAnimationFrameRate )
+    {
+		g_SpriteSheetCurrentColumn = (g_SpriteSheetCurrentColumn + 1) % g_SpriteSheetNumColumns;
+        g_SpriteSheetLastRecordedTime = elapsedMilliseconds;
+    }
+
+	int xOffset = 560;
+	int yOffset = 330;
+	RECT destRc = { xOffset, yOffset, g_SpriteSheetFrameWidth + xOffset, g_SpriteSheetFrameHeight + yOffset };
+	RECT srcRc = { g_SpriteSheetCurrentColumn * g_SpriteSheetFrameWidth, 
+					0, 
+					g_SpriteSheetCurrentColumn * g_SpriteSheetFrameWidth + g_SpriteSheetFrameWidth, 
+					g_SpriteSheetFrameHeight };
+	g_Sprites->Draw( g_pTextureBirdSheet, destRc, &srcRc, Colors::White );
 }
