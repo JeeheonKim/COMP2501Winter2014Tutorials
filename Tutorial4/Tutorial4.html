@@ -38,14 +38,21 @@ XMStoreFloat4x4( &amp;worldBody, XMMatrixScaling(0.5f, 0.5f, 1.0f) );</span></p>
 <p>Add this:<br />
   <span class="code">// Move body<br />
 XMStoreFloat4x4( &amp;worldBody, XMMatrixTranslation(8*sin(t), 0.0f, 0.0f ) * XMLoadFloat4x4(&amp;worldBody) );</span></p>
-<p>Run the program. Your robot should now be moving back and forth along the x axis. All we've done is apply a translation to the body. We are using the sine function to accomplish this translation. The sine function is useful for this kind of &quot;swinging&quot; motion. If you've forgotten the look of the sine curve, it is included below:</p>
+<p>Run the program. Your robot should now be moving back and forth along the x axis. All we've done is apply a translation to the body. <span class="red">Notice the entire robot moves because the position of the arms is defined relative to the position fo the body</span>. We are using the sine function to accomplish this translation. The sine function is useful for this kind of &quot;swinging&quot; motion. If you've forgotten the look of the sine curve, it is included below:</p>
 <p><img src="images/sinecurve.gif" width="552" height="323" /></p>
 <p>&nbsp;</p>
 <p class="black-bold">Problem 1)</p>
-<p>Modify the sine function from the example given so that your robot doesn't turn around until he reaches the very edge of the screen. If you need a refresher on sine curves, <a href="http://www.regentsprep.org/regents/math/algtrig/ATT7/sinusoidal.htm">this</a> is an excellent resource. Your robot should get at least this far before reversing direction:</p>
+<p>Modify the sine function from the example given so that your robot doesn't turn around until he reaches the very edge of the screen. You can just use reasonable constant values for this, not the actual dimensions of the screen. If you need a refresher on sine curves, <a href="http://www.regentsprep.org/regents/math/algtrig/ATT7/sinusoidal.htm">this</a> is an excellent resource. Your robot should get at least this far before reversing direction:</p>
 <p><img src="images/robot-reaching-edge.png" width="999" height="746" /></p>
 <p><span class="black-bold">Problem 2)</span></p>
-<p>Using the orbiting technique from the last tutorial, and sine as a function of time (as before), have the robots wave both forerarms move about their elbows (see picture below). In the finished product, the robot should be moving left to right as before, but this time waving both of his arms back and forth.</p>
+<p>Now we're going to make the robot wave his arms.</p>
+<p>Add this code after our code for the left forearm:</p>
+<p class="code"> // Move left forearm<br />
+XMStoreFloat4x4( &amp;worldLeftForearm, XMMatrixRotationZ(sin(t)) * XMLoadFloat4x4(&amp;worldLeftForearm));</p>
+<p>Run your code:</p>
+<p><img src="images/badwave.png" width="1000" height="749" /></p>
+<p>Hmm... That's not right. The arm is rotating around its center, not around the joint. Let's fix this.</p>
+<p>Using the orbiting technique from the last tutorial, and sine as a function of time (as before), to have the robot wave both forerarms about their elbows (see picture below). In the finished product, the robot should be moving left to right as in Problem 1, but this time waving both of his arms back and forth.</p>
 <p><em>Reminder</em>: To rotate around an arbitrary point P (in this case you want to rotate around the tip of the triangle at the joint):</p>
 <ol>
   <li>Translate by -P (so that P is at the origin (0,0,0))</li>

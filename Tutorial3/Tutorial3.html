@@ -37,7 +37,7 @@ m_D3D-&gt;GetProjectionMatrix(projectionMatrix);<br />
 <p>After storing the matrices in local variables, and before sending them off to the shader, we can perform all manner of transformations on them.</p>
 <p>Add the following lines in between the two code snippets above:<span class="code"></span></p>
 <p class="code"><span class="comment">// World transformations</span><br />
-XMStoreFloat4x4( &amp;worldMatrix, XMMatrixRotationZ(XM_PI/4) );<br />
+XMStoreFloat4x4( &amp;worldMatrices[0], XMMatrixRotationZ(XM_PI/4) );<br />
 </p>
 <p>Now run the application. You should see your robot body transformed like this:</p>
 <p><img src="images/transform-1.png" width="999" height="748" alt="transform-1" /></p>
@@ -47,6 +47,10 @@ XMStoreFloat4x4( &amp;worldMatrix, XMMatrixRotationZ(XM_PI/4) );<br />
 <p class="segment-header"><span class="black-bold">Problem 1)</span></p>
 <p> A single matrix can represent multiple transformations. We will be storing all of our world transformations in our worldMatrix. To combine multiple transformations, we multiple the transformation matrices together.</p>
 <p>Using XMMatrixScaling and XMMatrixTranslation, scale your robot body to half its size and then translate it to the top right of the screen. You will have to play with the x and y values to get the shape properly situated.</p>
+<p>The Microsoft website is an excellent resource to look up any functions you'd like to know more about. You may want to look up the following functions:</p>
+<p><a href="http://msdn.microsoft.com/en-us/library/windows/desktop/microsoft.directx_sdk.matrix.xmmatrixtranslation(v=vs.85).aspx">XMMatrixTranslation()</a></p>
+<p><a href="http://msdn.microsoft.com/en-us/library/windows/desktop/microsoft.directx_sdk.matrix.xmmatrixrotationz(v=vs.85).aspx">XMMatrixRotation()</a></p>
+<p><a href="http://msdn.microsoft.com/en-us/library/windows/desktop/microsoft.directx_sdk.matrix.xmmatrixscaling(v=vs.85).aspx">XMMatrixScaling()</a></p>
 <p>After running the application you should produce a screen like this:</p>
 <p><img src="images/transform-scale-then-translate.png" width="996" height="747" alt="scale-then-transform" /></p>
 <p>The order in which we multiple our transformation matrices matters. This is because matrices are not commutative. This means that, in general, in matrix multiplication: AB != BA. Try reversing the order of the matrices. Notice the difference:</p>

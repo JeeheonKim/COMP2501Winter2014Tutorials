@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>COMP2501 - Tutorial 1</title>
+<link href="template.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+.red {
+	color: #F00;
+}
+</style>
+</head>
+
+<body>
+<p class="header subheader">Converting from XNA to DirectXTK</p><hr/>
+<p>I converted <a href="http://people.scs.carleton.ca/~ldnel/2501winter2013/tutorials/tutorial04/tutorial 04 description rev1.html">Tutorial#4</a> from your existing tutorials to a DirectX version. These are some useful steps for doing this for other tutorials:</p>
+<p><strong>C++ vs. C#</strong></p>
+<p>C++ is different from C#, so there were semantic differences. I also make use of .h and .cpp files instead of the single .cs file used in the C# code.</p>
+<p>Other notable things: there's no &quot;override&quot; keyword in C++, you just specify &quot;virtual&quot; on the base class method and declare the method as usual on the subclass to override.</p>
+<p><strong>XNA vs. DirectX/DirectXTK</strong></p>
+<p>There's no <em><a href="http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.rectangle.aspx">Rectangle</a></em> class in DirectX. Use <em>RECT</em> instead, notice <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/dd162897(v=vs.85).aspx">the structure is different</a>. </p>
+<p>There's no Texture2D class in DirectX. However, calling <a href="http://msdn.microsoft.com/en-us/library/windows/desktop/ff476904(v=vs.85).aspx">CreateWICTextureFromFile()</a> will get you an ID3D11Resource that can be cast to to an ID3D11Texture2D, from which you can get the width and height of the texture. I do this in the Sprite constructor.</p>
+<p>There is no Vector2 in DirectX, instead use XMFLOAT2, it's similar.</p>
+<p>There's no GameTime in DirectX. I get it a different way at the beginning of the Render() method. There may be a better way to do this.</p>
+<p>SpriteBatch has a Draw() method just like in XNA, although <a href="http://directxtk.codeplex.com/wikipage?title=SpriteBatch&amp;referringTitle=DirectXTK">its parameters</a> are a little different. Most notably it takes an ID3D11ShaderResourceView instead of a Texture2D. This is returned from the CreateWICTextureFromFile() call as well (note: ID3D11Resource is not the same as ID3D11ShaderResourceView).</p>
+<p>Any image supplied to CreateWICTextureFromFile() has to have<strong> premultiplied alpha </strong>levels. Or so I thought when I was writing the tutorial. Apparently this can be changed, see <a href="http://directxtk.codeplex.com/wikipage?title=SpriteBatch&amp;referringTitle=DirectXTK">Alpha Blending</a>. </p>
+<p>SpriteEffects can be used in the same way as in XNA, but they are referenced differently. <em>SpriteEffects.None</em> in XNA vs. <em>SpriteEffects_None</em> in DirectXTK.</p>
+<hr/>
+<p>I think those were the main issues I encountered when converting the tutorial. You can probably just take a look at my Tutorial 9 code for any other differences you're confused about.<br />
+</p>
+</body>
+</html>
