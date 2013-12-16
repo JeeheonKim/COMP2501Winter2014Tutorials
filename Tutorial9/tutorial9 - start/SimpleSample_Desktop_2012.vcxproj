@@ -354,7 +354,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="FadingBirdSprite.h" />
     <CLInclude Include="resource.h" />
     <ClInclude Include="Sprite.h" />
   </ItemGroup>
@@ -362,7 +361,6 @@
     <ResourceCompile Include="SimpleSample.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="FadingBirdSprite.cpp" />
     <ClCompile Include="SimpleSample.cpp" />
     <ClCompile Include="Sprite.cpp" />
   </ItemGroup>

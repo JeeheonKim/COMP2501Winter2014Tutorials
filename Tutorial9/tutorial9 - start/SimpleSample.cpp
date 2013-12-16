@@ -22,7 +22,6 @@
 #include <directxmath.h>
 
 #include "Sprite.h"
-#include "FadingBirdSprite.h"
 
 #include "WICTextureLoader.h"
 #include "Effects.h"
@@ -295,12 +294,12 @@ HRESULT InitDevice()
     g_Font.reset( new SpriteFont( g_pd3dDevice, L"italic.spritefont" ) );
 
     // Load the Texture
-	hr = CreateWICTextureFromFile( g_pd3dDevice, g_pImmediateContext, L"birdSheetWithTransparency.png", &g_pTextureBirdSheetRes, &g_pTextureBirdSheet );
+	hr = CreateWICTextureFromFile( g_pd3dDevice, g_pImmediateContext, L"birdSheetMulticolored.png", &g_pTextureBirdSheetRes, &g_pTextureBirdSheet );
     if( FAILED( hr ) )
         return hr;
 	
 	// Create new Sprite
-	g_Sprite = new FadingBirdSprite(g_pTextureBirdSheetRes, g_pTextureBirdSheet, 8, 8, 10, XMFLOAT2(560, 330), XMFLOAT2(0.20, 0));
+	g_Sprite = new Sprite(g_pTextureBirdSheetRes, g_pTextureBirdSheet, 8, 8, 10, XMFLOAT2(560, 330), XMFLOAT2(0.20, 0));
 
     // Initialize the world matrices
     g_World = XMMatrixIdentity();
@@ -457,6 +456,7 @@ void Render()
 	DrawGrid();
 	
 	// Update our Sprite
+	
 	g_Sprite->Update(t, g_Window );
 
 	POINT cursorPos;

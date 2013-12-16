@@ -11,7 +11,6 @@
       <Filter>Resource Files</Filter>
     </CLInclude>
     <ClInclude Include="Sprite.h" />
-    <ClInclude Include="FadingBirdSprite.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SimpleSample.rc">
@@ -21,6 +20,5 @@
   <ItemGroup>
     <ClCompile Include="SimpleSample.cpp" />
     <ClCompile Include="Sprite.cpp" />
-    <ClCompile Include="FadingBirdSprite.cpp" />
   </ItemGroup>
 </Project>

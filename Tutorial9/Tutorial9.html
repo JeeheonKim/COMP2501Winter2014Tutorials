@@ -4,93 +4,104 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>COMP2501 - Tutorial 1</title>
 <link href="template.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+.red {
+	color: #F00;
+}
+</style>
 </head>
 
 <body>
-<p class="header">COMP 2501 - Winter 2014 Tutorial #8</p>
-<p class="header subheader">DirectXTK and Debugging</p><hr/>
+<p class="header">COMP 2501 - Winter 2014 Tutorial #9</p>
+<p class="header subheader">Sprite Sheets with Row, Columns and Transparency in DirectX</p>
+<hr/>
 <p class="segment-header">Description:</p>
-<p>The purpose of this tutorial is to familiarize yourself with DirectXTK and debugging.</p>
-<p>To get credit for the tutorial you must complete, or make significant progress, on the problems provided and demonstrate your results to the tutorial TA.<br />
-  <br />
-If you cannot complete the tutorial in the time allotted you may demonstrate the completed results to the TA during their office hours.</p>
-<p>This tutorial is based on and adapted version of the <a href="http://code.msdn.microsoft.com/DirectXTK-Simple-Win32-23db418a">DirectXTK Simple Sample</a>.</p>
+<p>The purpose of this tutorial is to give you practice using sprite sheets with both multiple rows and columns of frames and images that contain graduated transparency. You will also get practice doing sub-classing in C++. In this tutorial we will adjust the frames being displayed to make an object (flying bird) fade completely to invisible and then fade back in.</p>
+<p>To get credit for the tutorial you must complete, or make significant progress, on the problems provided and demonstrate your results to the tutorial TA. If you cannot complete the tutorial in the time allotted you may demonstrate the completed results to the TA during their office hours.</p>
+<p>The code for this tutorial is an adapted version of the <a href="http://code.msdn.microsoft.com/DirectXTK-Simple-Win32-23db418a">DirectXTK Simple Sample</a>.</p>
 <hr/>
 <p class="segment-header">Instructions:</p>
 <p class="segment-header black-bold">Overview</p>
-<p>The DirectX Tool Kit (DirectXTK) is a collection of helper classes for writing Direct3D 11 C++ code. This tutorial will familiarize you with those tools and how you can use them to help you debug your game. Notice that our solution is now composed of two projects:</p>
-<p><img src="images/twoprojects.png" width="417" height="92" /></p>
-<p>SimpleSample is the application we will be running, and DirectXTK_Desktop_2012 is the Desktop flavour of the DirectXTK Library. We don't execute this code directly, we simply reference it from SimpleSample.</p>
-<p><strong>NOTE</strong>: You can include DirectXTK in your own projects as well. All you need is a copy of the DirectXTK code, available from their <a href="https://directxtk.codeplex.com/">website</a>. Once you have it, all you need to do is place it in your source directory, and then reference it like we're doing in this project:</p>
-<p><img src="images/includes.png" width="298" height="244" /></p>
-<p>You don't need to include all of the headers listed above, just the ones that you're going to make use of. More on that later.</p>
-<p>Run SimpleSample:</p>
-<p><img src="images/start.png" width="654" height="526" /></p>
-<p>&nbsp;</p>
-<p>Our code doesn't do very much now, except display a blue screen. Let's change that.</p>
+<p>Run the project. It should open a window that looks like the following with the bird flying around the screen. As the bird flies around the screen it changes colors with each complete cycle of wing flaps. This is to confirm that we are cycling through all the rows of the sprite sheet. The sheet being used is shown below -use it to help you with debugging because the color of the bird shows you which row of the sprite sheet you are currently displaying.</p>
+<p><img src="images/birdflapping.png" width="1213" height="812" /></p>
+<p>The flying bird with changing colors is based on the following sprite sheet that is being cycled through in the Sprite class' Draw() method: This sheet has 8 rows and 8 columns, each row is a different color to help with debugging code that is meant to cycle through the sprite sheet.</p>
+<p><img src="images/birdSheetMulticolored.png" width="578" height="800" /></p>
 <p><strong>Problem 1)</strong></p>
-<p>One thing that can make the development of games much easier is a frame of reference. Let's add that to our screen in the form of a grid.</p>
-<p>The PrimitiveBatch library is a simple way to draw user primitives (such as lines or triangles) to the screen. It is simpler than using the Vertex and Index buffers, but not as efficient, so it is generally only used for debug rendering.</p>
-<p>We've already configured and set up the variables needed to make use of this library. You'll notice a DrawGrid() method. This is what you'll need to complete. The function you'll want to make use of is the following:</p>
-<pre>g_Batch-&gt;DrawLine(VertexPositionColor(...), VertexPositionColor(...));</pre>
-<p>This function draws a line between two points, each specified by a VertexPositionColor. A VertexPositionColor is just a vertex that holds data for a position and a color, like we've done before. To create a VertexPositionColor, you can write something like the following:<span class="code"></span></p>
-<p class="code"><br />
-XMFLOAT3 pos = XMFLOAT3(1.0f, 0.0f, 0.0f);<br />
-XMVECTORF32 col = Colors::Gray;<br />
-VertexPositionColor v = VertexPositionColor(XMLoadFloat3(&amp;pos), col);</p>
-<p>You'll need to make use of both for loops, and the already defined variables (numRows, numColumns, minX etc.) to draw the grid, or, if you think of a better way, you're welcome to implement it.</p>
-<p>You should create something like the following:</p>
-<p><img src="images/grid.png" width="1218" height="805" /></p>
-<p>Now you have a grid that you could use to position elements around the screen in an accurate way.</p>
-<p><strong>Problem 2)</strong></p>
-<p> Right now our grid is pretty plain. Let's improve it.</p>
-<p>First, use your knowledge of drawing lines to draw red lines down the x and y axes, like this:</p>
-<p><img src="images/axes.png" width="1217" height="803" /></p>
-<p>Next, we're going to label these axes. The SpriteFont class provides functionality for rendering text to the screen. It is similar to the SpriteFont class from XNA. It is used in the following way:</p>
-<p class="code"><span class="comment">// Draw sprite</span><br />
-g_Sprites-&gt;Begin( SpriteSortMode_Deferred );<br />
-<br />
-g_Font-&gt;DrawString( g_Sprites.get(), L&quot;hello world&quot;, XMFLOAT2( 100, 10 ), Colors::Yellow );<br />
-</p>
-<p class="code">g_Sprites-&gt;End(); </p>
-<p>The DrawString() method takes a reference to our spritebatch, a string to render, a position to render the string at (in pixels), and a color to apply to the text. </p>
-<p>You will notice at the bottom of the Render() method, we have the first and last lines are already implemented:</p>
-<p class="code"><span class="comment">// Draw sprite</span><br />
-g_Sprites-&gt;Begin( SpriteSortMode_Deferred );</p>
-<p class="code"><br />
-  g_Sprites-&gt;End();</p>
-<p>Call the DrawString() method and add a yellow &quot;0&quot; to the origin of the grid. </p>
-<p>The origin of the grid is located at the exact centre of the screen. The screen measures 1200 pixels X 768 pixels. In DirectXTK, things are drawn to the screen using a coordinate system that begins at the top left, like the following:</p>
-<p><img src="images/coordinate.jpg" width="459" height="256" /></p>
-<p>Using this information, place the &quot;0&quot; at the origin, like this:</p>
-<p><img src="images/origin.png" width="1217" height="807" /></p>
-<p>Add an &quot;x&quot; and &quot;y&quot; label to each axis to finish up the grid:</p>
-<p><img src="images/labeledaxes.png" width="1214" height="805" /></p>
-<p><strong>Problem 3)</strong></p>
-<p>We're now going to add some text to tell us where our mouse cursor is.</p>
-<p>To figure out where our mouse cursor is on your screen use:</p>
-<p class="code">POINT cursorPos;<br />
-GetCursorPos(&amp;cursorPos);</p>
-<p>This will give you the position of your cursor relative to your whole screen. You can access the x or y coordinates like this:</p>
-<p class="code">long xLong = cursorPos.x;<br />
-long yLong = cursorPos.y;</p>
-<p>To constrain that to the game window use:</p>
-<p><span class="code">ScreenToClient(g_hWnd, &amp;cursorPos);</span><br />
-</p>
-<p>You now have the position of your cursor relative to the game window. Use this to draw the coordinates in the upper left corner of the screen.</p>
-<p><strong>Note</strong>: You can convert the long returned from cursorPos.x or cursorPos.y to a wchar (to be used in DrawString()) by doing the following:</p>
-<p class="code"><br />
-long xLong = cursorPos.x;</p>
-<p class="code"> std::wostringstream woss;<br />
-  woss &lt;&lt; xLong;<br />
-  const std::wstring&amp; xString = woss.str();</p>
-<p class="code">g_Font-&gt;DrawString( g_Sprites.get(), xString.c_str(), XMFLOAT2( 0, 0 ), Colors::Yellow );</p>
-<p>Draw the coordinates to the screen like this:</p>
-<p><img src="images/coordinates.png" width="1217" height="805" /></p>
-<p><strong>Problem 4)</strong></p>
-<p>Convert window-based coordinates from the previous problem into your own grid-based coordinates, so that x and y are both 0 when the cursor is at the origin of the coordinate system.</p>
-<p><img src="images/coordinatesorigin.png" width="1215" height="805" /></p>
+<p>Locate the place in the SimpleSample class where the multi-colored sprite sheet is being loaded. Replace this line of code with one that loads the content from the birdSheetWithTransparency image asset instead. This sprite sheet is based on 8 rows and 8 columns and the bird is more transparent in each row as shown below. <span class="red">[A word of caution to avoid confusion: Among the tutorial files there are two versions of these sprite sheets, ones with a transparent background which are used in the code ones with a white background. The ones with the white background are just used for this web page description  of the tutorial.]</span></p>
+<p><img src="images/birdSheetWithTransparency.png" width="578" height="800" /></p>
+<p>Re-run the code and you should see the yellow bird fading and then reappearing as it flies instead of changing colors as in the demo code. Unfortunately there are two problems. 1)The yellow bird does not completely fade to invisible -we would like that to happen. Second the yellow bird goes from being fully faded to suddenly being fully opaque again. We would like instead for it to fade back in at the same speed as it faded out. In the following problems we will fix that.</p>
 <p>&nbsp;</p>
-<p><img src="images/propercoordinates.png" width="1217" height="801" /></p>
+<p><strong>Problem</strong><strong> 2)</strong></p>
+<p> <br />
+Fading to completely invisible.</p>
+<p>We are going to modify the code so that the bird actually displays a pretend 9'th row of &quot;invisible&quot; birds so the flying bird will appear completely invisible for one full &quot;wing flap cycle&quot;. However, we do not want to alter the general behaviour of all Sprite objects, like the arrow for example. So we are going to create a subclass of Sprite called FadingBirdSprite in which we can customize the Update() and Draw() methods specifically for fading birds.</p>
+<p>Right click on the &quot;SimpleSample&quot; project in the solution explorer and choose <strong>Add/Class...</strong> On the next screen simply click <strong>Add </strong>and give your class the name FadingBirdSprite (the .h and .cpp filenames will be autogenerated). Enter Sprite as the Base class. Press <strong>Finish</strong>. </p>
+<p>Once this is done you should have new FadingBirdSprite.h and FadingBirdSprite.cpp classes. Open the FadingBirdSprite.h file and examine the bit of code that has been written for you. It should look something like the following.</p>
+<p class="code">#pragma once<br />
+  #include &quot;sprite.h&quot;
+  <br />
+  class FadingBirdSprite : public Sprite<br />
+  {<br />
+  public:<br />
+  FadingBirdSprite(void);<br />
+  ~FadingBirdSprite(void);<br />
+};</p>
+<p>Modify the code to include the prototypes for the constructors and Update() and Draw() which we will be overriding in the .cpp file.</p>
+<p class="code">#pragma once<br />
+  #include &quot;sprite.h&quot;<br />
+  class FadingBirdSprite :<br />
+public Sprite<br />
+{<br />
+public:<br />
+FadingBirdSprite(ID3D11Resource* spriteSheetResource, ID3D11ShaderResourceView* spriteSheet,int numColumns, int numRows, int anAnimationFrameRate, XMFLOAT2 aLocation, XMFLOAT2 aVelocity);<br />
+~FadingBirdSprite(void);<br />
+<br />
+public:<br />
+void Update(float gameTime, RECT clientBounds);<br />
+void Draw(SpriteBatch* spriteBatch, float gameTime);<br />
+};</p>
+<p>Replace the contents of FadingBirdSprite.cpp with the following:</p>
+<p class="code">#include &quot;FadingBirdSprite.h&quot;</p>
+<p class="code">FadingBirdSprite::FadingBirdSprite(ID3D11Resource* spriteSheetResource, ID3D11ShaderResourceView* spriteSheet, <br />
+  int numColumns, int numRows, int anAnimationFrameRate, XMFLOAT2 aLocation, XMFLOAT2 aVelocity) <br />
+  : Sprite(spriteSheetResource, spriteSheet, numColumns, numRows, anAnimationFrameRate, aLocation, aVelocity)<br />
+  {<br />
+  }<br />
+</p>
+<p class="code">FadingBirdSprite::~FadingBirdSprite(void)<br />
+  {<br />
+  }</p>
+<p class="code">void FadingBirdSprite::Update(float gameTime, RECT clientBounds)<br />
+  {<br />
+  }</p>
+<p class="code">void FadingBirdSprite::Draw(SpriteBatch* spriteBatch, float gameTime)<br />
+  {<br />
+  }</p>
+<p>Notice the base class constructor is invoked with the initializer list that starts with the &quot;:&quot;.</p>
+<p>In SimpleSample.cpp add this to the includes at the top of the file:</p>
+<p class="code">#include &quot;FadingBirdSprite.h&quot;</p>
+<p>Then change this line:<span class="code"></span></p>
+<p class="code">// Create new Sprite<br />
+g_Sprite = new Sprite(g_pTextureBirdSheetRes, g_pTextureBirdSheet, 8, 8, 10, XMFLOAT2(560, 330), XMFLOAT2(0.20, 0));</p>
+<p>To this:</p>
+<p><span class="code">// Create new Sprite<br />
+g_Sprite = new FadingBirdSprite(g_pTextureBirdSheetRes, g_pTextureBirdSheet, 8, 8, 10, XMFLOAT2(560, 330), XMFLOAT2(0.20, 0));</span></p>
+<p><span class="code"><br />
+</span> You should now be able to run the code and your bird object will now be an instance ofFadingBirdSprite rather than Sprite. The behaviour of the code will not be different yet, but we can now customize the Update() and Draw() methods of the FadingBirdSprite class. First though, we have to specify in the base class (Sprite) that we'd like to allow Update() and Draw() to be overridden. Open Sprite.h and replace this:</p>
+<p class="code"><br />
+  void Update(float gameTime, RECT clientBounds);<br />
+void Draw(SpriteBatch* spriteBatch, float gameTime);</p>
+<p>With this:</p>
+<p class="code"><br />
+virtual void Update(float gameTime, RECT clientBounds);<br />
+virtual void Draw(SpriteBatch* spriteBatch, float gameTime);</p>
+<p>The virtual keyword tells the program that, if this method exists in the subclass, use that version instead. If you run your code now, you will notice that you won't see the bird at all. This is because we haven't written any behaviour in our overridden Update() and Draw() methods yet.</p>
+<p>Now go ahead and modify the code in these two methods so that the bird remains invisible for a full &quot;wing flap&quot; cycle. Here is a suggestion: have your code go through 9 rows instead of 8 and on the 9th row don't draw anything. Or, &quot;don't draw&quot; the frames of the 8th row. Try both approaches an see which looks best. If you try the &quot;9th row&quot; approach you could easily add more invisible rows and make the bird invisible longer.</p>
+<p>&nbsp;</p>
+<p><strong>Problem 3)</strong></p>
+<p>A problem still remains. The bird goes from being fully transparent to fully opaque too abruptly. We want it to fade back in as gently as it faded out. To do this modify the Update() and Draw()method again so that once the bird has faded it re-appears by &quot;playing the rows backwards&quot;. That is, cycle through the rows of the sprite sheet images and when you get to the bottom, invisible row, start back up from the bottom to the top. So if you are using the &quot;9th row&quot; approach for problem 1 your the rows would be drawn in the order 0,1,2,...7,8,7,6...2,1,0 and then the cycle would  repeat. The effect should be that the bird fades out and then fades back in at the same rate.</p>
+<p>&nbsp;</p>
+<p>When you have completed the above problems show your results to the TA to get credit for the tutorial.<br />
+</p>
 </body>
 </html>
